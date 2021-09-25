@@ -4,6 +4,7 @@
 #include "Actors/DrawingCanvas.h"
 
 #include "Engine/TextureRenderTarget2D.h"
+#include "Kismet/KismetRenderingLibrary.h"
 
 // Sets default values
 ADrawingCanvas::ADrawingCanvas()
@@ -53,6 +54,17 @@ void ADrawingCanvas::BeginPlay()
 		// Setup render target
 		CanvasMaterialInstance->SetTextureParameterValue(TEXT("RenderTarget"), CanvasRenderTarget);
 	}
+
+	// Create public brush material instance
+	if (IsValid(BrushMaterial))
+	{
+		UObject* MIDOuter = GetWorld();
+		BrushMaterialInstance = UMaterialInstanceDynamic::Create(BrushMaterial, MIDOuter);
+		if (MIDOuter == nullptr)
+		{
+			BrushMaterialInstance->SetFlags(RF_Transient);
+		}
+	}
 }
 
 // Called every frame
@@ -60,5 +72,10 @@ void ADrawingCanvas::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ADrawingCanvas::Clear()
+{
+	UKismetRenderingLibrary::ClearRenderTarget2D(this, CanvasRenderTarget, CanvasSetting.ClearColor);
 }
 

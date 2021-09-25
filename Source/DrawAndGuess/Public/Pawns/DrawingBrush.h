@@ -6,6 +6,8 @@
 #include "GameFramework/Pawn.h"
 #include "DrawingBrush.generated.h"
 
+class UDrawingAction_Pencil;
+
 UCLASS()
 class DRAWANDGUESS_API ADrawingBrush : public APawn
 {
@@ -30,6 +32,8 @@ protected:
 	void OnDrawButtonPressed();
 	void OnDrawButtonReleased();
 
+	void OnUndoPressed();
+
 public:
 	virtual void PossessedBy(AController* NewController) override;
 
@@ -43,7 +47,11 @@ public:
 
 	void SetBrushSize(float NewSize) { BrushSize = NewSize; }
 
+	float GetBrushSize() const { return BrushSize; }
+
 	void SetBrushTexture(UTexture2D* NewTexture);
+
+	UTexture2D* GetBrushTexture() const { return BrushTexture; }
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DrawingBrush")
@@ -62,4 +70,6 @@ protected:
 	UMaterialInstanceDynamic* BrushMaterialInstance;
 
 	bool bDrawing;
+
+	UDrawingAction_Pencil* CurrentDrawAction;
 };

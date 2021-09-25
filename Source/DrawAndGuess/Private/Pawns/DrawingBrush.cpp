@@ -4,7 +4,10 @@
 #include "Pawns/DrawingBrush.h"
 
 #include "DrawDebugHelpers.h"
+#include "EngineUtils.h"
 #include "Actors/DrawingCanvas.h"
+#include "DrawingSystem/DrawingActionManager.h"
+#include "DrawingSystem/DrawingAction_Pencil.h"
 #include "Engine/Canvas.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetRenderingLibrary.h"
@@ -59,11 +62,26 @@ void ADrawingBrush::DrawBrush(UTextureRenderTarget2D* RenderTarget, FVector2D Lo
 void ADrawingBrush::OnDrawButtonPressed()
 {
 	bDrawing = true;
+
+	// Create the action
+	CurrentDrawAction = Cast<UDrawingAction_Pencil>(UDrawingActionManager::GetInstance()->CreateDrawingAction(DAT_Pencil));
+	CurrentDrawAction->CopyBrushSetting(this);
+
+	// Temp code
+	for (TActorIterator<ADrawingCanvas> Iter(GetWorld()); Iter; ++Iter)
+	{
+		CurrentDrawAction->SetParentCanvas(*Iter);
+	}
 }
 
 void ADrawingBrush::OnDrawButtonReleased()
 {
 	bDrawing = false;
+}
+
+void ADrawingBrush::OnUndoPressed()
+{
+	UDrawingActionManager::GetInstance()->Undo();
 }
 
 void ADrawingBrush::PossessedBy(AController* NewController)
@@ -111,7 +129,8 @@ void ADrawingBrush::Tick(float DeltaTime)
 						UGameplayStatics::FindCollisionUV(CursorRayHitResult, 0, UVCoordinate);
 
 						// Draw brush
-						DrawBrush(DrawingCanvas->GetCanvasRenderTarget(), UVCoordinate);
+						//DrawBrush(DrawingCanvas->GetCanvasRenderTarget(), UVCoordinate);
+						CurrentDrawAction->AppendDrawPoint(UVCoordinate);
 					}
 				}
 			}
@@ -126,6 +145,7 @@ void ADrawingBrush::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 	PlayerInputComponent->BindAction(TEXT("Draw"), EInputEvent::IE_Pressed, this, &ADrawingBrush::OnDrawButtonPressed);
 	PlayerInputComponent->BindAction(TEXT("Draw"), EInputEvent::IE_Released, this, &ADrawingBrush::OnDrawButtonReleased);
+	PlayerInputComponent->BindAction(TEXT("Undo"), EInputEvent::IE_Pressed, this, &ADrawingBrush::OnUndoPressed);
 }
 
 void ADrawingBrush::SetBrushTexture(UTexture2D* NewTexture)

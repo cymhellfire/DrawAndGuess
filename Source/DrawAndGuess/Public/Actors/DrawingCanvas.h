@@ -52,6 +52,18 @@ public:
 
 	UTextureRenderTarget2D* GetCanvasRenderTarget() const { return CanvasRenderTarget; }
 
+	/**
+	 * Get the public brush material instance provided for drawing actions.
+	 * 
+	 * @return		The brush material for drawing actions.
+	 */
+	UMaterialInstanceDynamic* GetDrawingBrushMaterial() { return BrushMaterialInstance; }
+
+	/**
+	 * Reset canvas to blank state.
+	 */
+	void Clear();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Canvas")
 	UStaticMeshComponent* CanvasMeshComponent;
@@ -60,10 +72,16 @@ protected:
 	UMaterial* CanvasMaterial;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Canvas")
+	UMaterial* BrushMaterial;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Canvas")
 	FCanvasSettings CanvasSetting;
 
 	UPROPERTY(Transient)
 	UMaterialInstanceDynamic* CanvasMaterialInstance;
+
+	UPROPERTY(Transient)
+	UMaterialInstanceDynamic* BrushMaterialInstance;
 
 	UPROPERTY(Transient)
 	UTextureRenderTarget2D* CanvasRenderTarget;
