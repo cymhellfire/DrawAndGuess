@@ -7,14 +7,10 @@
 class UDrawingActionBase;
 
 UCLASS()
-class DRAWANDGUESS_API UDrawingActionManager : public UObject
+class DRAWANDGUESS_API UDrawingActionManager : public ULocalPlayerSubsystem
 {
 	GENERATED_BODY()
 public:
-	static UDrawingActionManager* GetInstance();
-
-	void Initialize();
-
 	/**
 	 * Create a drawing action with given type.
 	 *
@@ -28,14 +24,6 @@ public:
 	void Undo();
 
 protected:
-
-	void OnWorldCleanup(UWorld* World, bool bSessionEnded, bool bCleanupResources);
-
-protected:
 	UPROPERTY(Transient)
-	TArray<UDrawingActionBase*> DrawingActionStack; 
-
-	static UDrawingActionManager* Instance;
-
-	FDelegateHandle WorldCleanupDelegateHandle;
+	TArray<UDrawingActionBase*> DrawingActionStack;
 };

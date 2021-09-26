@@ -64,13 +64,19 @@ void ADrawingBrush::OnDrawButtonPressed()
 	bDrawing = true;
 
 	// Create the action
-	CurrentDrawAction = Cast<UDrawingAction_Pencil>(UDrawingActionManager::GetInstance()->CreateDrawingAction(DAT_Pencil));
-	CurrentDrawAction->CopyBrushSetting(this);
-
-	// Temp code
-	for (TActorIterator<ADrawingCanvas> Iter(GetWorld()); Iter; ++Iter)
+	if (APlayerController* MyPlayerController = Cast<APlayerController>(GetController()))
 	{
-		CurrentDrawAction->SetParentCanvas(*Iter);
+		if (UDrawingActionManager* DrawingActionManager = MyPlayerController->GetLocalPlayer()->GetSubsystem<UDrawingActionManager>())
+		{
+			CurrentDrawAction = Cast<UDrawingAction_Pencil>(DrawingActionManager->CreateDrawingAction(DAT_Pencil));
+			CurrentDrawAction->CopyBrushSetting(this);
+
+			// Temp code
+			for (TActorIterator<ADrawingCanvas> Iter(GetWorld()); Iter; ++Iter)
+			{
+				CurrentDrawAction->SetParentCanvas(*Iter);
+			}
+		}
 	}
 }
 
@@ -81,7 +87,13 @@ void ADrawingBrush::OnDrawButtonReleased()
 
 void ADrawingBrush::OnUndoPressed()
 {
-	UDrawingActionManager::GetInstance()->Undo();
+	if (APlayerController* MyPlayerController = Cast<APlayerController>(GetController()))
+	{
+		if (UDrawingActionManager* DrawingActionManager = MyPlayerController->GetLocalPlayer()->GetSubsystem<UDrawingActionManager>())
+		{
+			DrawingActionManager->Undo();
+		}
+	}
 }
 
 void ADrawingBrush::PossessedBy(AController* NewController)
