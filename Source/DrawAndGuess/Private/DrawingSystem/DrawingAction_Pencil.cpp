@@ -78,7 +78,8 @@ void UDrawingAction_Pencil::CopyBrushSetting(ADrawingBrush* Brush)
 {
 	BrushSettings = FDrawingBrushSettings{
 		Brush->GetBrushTexture(),
-		Brush->GetBrushSize()
+		Brush->GetBrushSize(),
+		Brush->GetBrushColor()
 	};
 }
 
@@ -86,4 +87,7 @@ void UDrawingAction_Pencil::ApplyBrushSettingsToMaterial(UMaterialInstanceDynami
 {
 	// Change texture
 	TargetMaterial->SetTextureParameterValue(TEXT("BrushTexture"), BrushSettings.BrushTexture);
+
+	// Change brush color
+	TargetMaterial->SetVectorParameterValue(TEXT("BrushColor"), BrushSettings.BrushColor);
 }

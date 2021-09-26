@@ -45,6 +45,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(BlueprintCallable, Category="DrawingBrush")
 	void SetBrushSize(float NewSize) { BrushSize = NewSize; }
 
 	float GetBrushSize() const { return BrushSize; }
@@ -52,6 +53,11 @@ public:
 	void SetBrushTexture(UTexture2D* NewTexture);
 
 	UTexture2D* GetBrushTexture() const { return BrushTexture; }
+
+	UFUNCTION(BlueprintCallable, Category="DrawingBrush")
+	void SetBrushColor(FLinearColor NewColor);
+
+	FLinearColor GetBrushColor() const { return BrushColor; }
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DrawingBrush")

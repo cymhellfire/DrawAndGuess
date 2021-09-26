@@ -169,3 +169,12 @@ void ADrawingBrush::SetBrushTexture(UTexture2D* NewTexture)
 	BrushMaterialInstance->SetTextureParameterValue(TEXT("BrushTexture"), BrushTexture);
 }
 
+void ADrawingBrush::SetBrushColor(FLinearColor NewColor)
+{
+	if (BrushColor == NewColor)
+		return;
+
+	BrushColor = NewColor;
+	BrushMaterialInstance->SetVectorParameterValue(TEXT("BrushColor"), BrushColor);
+}
+
