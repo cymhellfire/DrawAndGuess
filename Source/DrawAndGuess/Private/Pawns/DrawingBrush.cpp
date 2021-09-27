@@ -62,6 +62,7 @@ void ADrawingBrush::DrawBrush(UTextureRenderTarget2D* RenderTarget, FVector2D Lo
 void ADrawingBrush::OnDrawButtonPressed()
 {
 	bDrawing = true;
+	bPendingDrawing = true;
 
 	// Create the action
 	if (APlayerController* MyPlayerController = Cast<APlayerController>(GetController()))
@@ -96,6 +97,14 @@ void ADrawingBrush::OnUndoPressed()
 	}
 }
 
+void ADrawingBrush::OnCursorAxisChanged(float Input)
+{
+	if (FMath::Abs(Input) > 0.01f && bDrawing)
+	{
+		bPendingDrawing = true;
+	}
+}
+
 void ADrawingBrush::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -123,7 +132,7 @@ void ADrawingBrush::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bDrawing)
+	if (bPendingDrawing)
 	{
 		if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 		{
@@ -147,6 +156,8 @@ void ADrawingBrush::Tick(float DeltaTime)
 				}
 			}
 		}
+
+		bPendingDrawing = false;
 	}
 }
 
@@ -158,6 +169,9 @@ void ADrawingBrush::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction(TEXT("Draw"), EInputEvent::IE_Pressed, this, &ADrawingBrush::OnDrawButtonPressed);
 	PlayerInputComponent->BindAction(TEXT("Draw"), EInputEvent::IE_Released, this, &ADrawingBrush::OnDrawButtonReleased);
 	PlayerInputComponent->BindAction(TEXT("Undo"), EInputEvent::IE_Pressed, this, &ADrawingBrush::OnUndoPressed);
+
+	PlayerInputComponent->BindAxis(TEXT("CursorX"), this, &ADrawingBrush::OnCursorAxisChanged);
+	PlayerInputComponent->BindAxis(TEXT("CursorY"), this, &ADrawingBrush::OnCursorAxisChanged);
 }
 
 void ADrawingBrush::SetBrushTexture(UTexture2D* NewTexture)

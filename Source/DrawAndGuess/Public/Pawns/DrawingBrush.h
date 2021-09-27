@@ -34,6 +34,8 @@ protected:
 
 	void OnUndoPressed();
 
+	void OnCursorAxisChanged(float Input);
+
 public:
 	virtual void PossessedBy(AController* NewController) override;
 
@@ -76,6 +78,7 @@ protected:
 	UMaterialInstanceDynamic* BrushMaterialInstance;
 
 	bool bDrawing;
+	bool bPendingDrawing;
 
 	UDrawingAction_Pencil* CurrentDrawAction;
 };

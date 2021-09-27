@@ -4,7 +4,7 @@
 
 UJoyColorWheel::UJoyColorWheel(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
-	, JoyColor(FLinearColor::White)
+	, JoyColor(FLinearColor::Black)
 {
 	//Default Values Set Here, see above
 }
