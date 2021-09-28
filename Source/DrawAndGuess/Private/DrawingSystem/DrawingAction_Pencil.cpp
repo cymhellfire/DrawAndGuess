@@ -2,7 +2,21 @@
 
 #include "Actors/DrawingCanvas.h"
 #include "Engine/Canvas.h"
+#include "Framework/DAGGameUserSettings.h"
 #include "Kismet/KismetRenderingLibrary.h"
+#include "Pawns/DrawingBrush.h"
+
+UDrawingAction_Pencil::UDrawingAction_Pencil()
+{
+	// Get the pencil interpolation settings
+	if (GEngine != nullptr)
+	{
+		if (UDAGGameUserSettings* GameUserSettings = Cast<UDAGGameUserSettings>(GEngine->GetGameUserSettings()))
+		{
+			InterpolationThreshold = GameUserSettings->GetPencilInterpolateThreshold();
+		}
+	}
+}
 
 void UDrawingAction_Pencil::ApplyToCanvas()
 {
@@ -14,8 +28,53 @@ void UDrawingAction_Pencil::ApplyToCanvas()
 
 void UDrawingAction_Pencil::AddInputPoint(FVector2D NewPoint)
 {
+	static FVector2D NullVector(-1, -1);
 	// Append this new point to existing line
-	AppendDrawPoint(NewPoint);
+	if (InterpolationThreshold != 0.f && LastPoint != NullVector)
+	{
+		TArray<FVector2D> InterpolatePoints = InterpolateDrawingPoints(LastPoint, NewPoint, InterpolationThreshold);
+		if (InterpolatePoints.Num() > 0)
+		{
+			for (FVector2D Interpoint : InterpolatePoints)
+			{
+				AppendDrawPoint(Interpoint);
+			}
+		}
+		AppendDrawPoint(NewPoint);
+	}
+	else
+	{
+		AppendDrawPoint(NewPoint);
+	}
+
+	LastPoint = NewPoint;
+}
+
+void UDrawingAction_Pencil::CopyBrushSettings(ADrawingBrush* Brush)
+{
+	Super::CopyBrushSettings(Brush);
+}
+
+TArray<FVector2D> UDrawingAction_Pencil::InterpolateDrawingPoints(FVector2D Origin, FVector2D Dest, float Threshold)
+{
+	TArray<FVector2D> Result;
+
+	// We need parent canvas for getting correct canvas size
+	if (HasCanvasToDraw())
+	{
+		float BrushSize = BrushSettings.BrushSize;
+		const FVector2D CanvasSize = ParentCanvas->GetCanvasSize();
+		FVector2D DeltaPos = (Dest - Origin);
+		FVector2D DeltaPosInCanvas = DeltaPos * CanvasSize;
+		float DeltaDist = DeltaPosInCanvas.Size();
+		int32 InterpolateCount = FMath::FloorToInt(DeltaDist / BrushSize / Threshold);
+		for (int32 Index = 0; Index < InterpolateCount; ++Index)
+		{
+			Result.Add(Origin + DeltaPos * (Index + 1) / InterpolateCount);
+		}
+	}
+
+	return Result;
 }
 
 void UDrawingAction_Pencil::ApplyToCanvasIncremental(FVector2D NewPoint)

@@ -10,12 +10,25 @@ class DRAWANDGUESS_API UDrawingAction_Pencil : public UDrawingActionBase
 {
 	GENERATED_BODY()
 public:
+	UDrawingAction_Pencil();
 
 	virtual void ApplyToCanvas() override;
 
 	virtual void AddInputPoint(FVector2D NewPoint) override;
 
+	virtual void CopyBrushSettings(ADrawingBrush* Brush) override;
+
 protected:
+	/**
+	 * Interpolate extra points between origin and destination.
+	 *
+	 * @param Origin			The origin point
+	 * @param Dest				The destination point
+	 * @param Threshold			Threshold to determine if there should be a interpolated point
+	 * @return An array of interpolated points
+	 */
+	TArray<FVector2D> InterpolateDrawingPoints(FVector2D Origin, FVector2D Dest, float Threshold);
+
 	/**
 	* Append a new point to pencil line.
 	*
@@ -48,4 +61,8 @@ protected:
 
 protected:
 	TArray<FVector2D> DrawPoints;
+
+	FVector2D LastPoint = FVector2D(-1, -1);
+
+	float InterpolationThreshold;
 };

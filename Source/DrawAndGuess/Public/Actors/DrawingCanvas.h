@@ -52,6 +52,9 @@ public:
 
 	UTextureRenderTarget2D* GetCanvasRenderTarget() const { return CanvasRenderTarget; }
 
+	/* Get the actual size of canvas render target. */
+	FVector2D GetCanvasSize() const { return FVector2D(CanvasSetting.Width, CanvasSetting.Height); }
+
 	/**
 	 * Get the public brush material instance provided for drawing actions.
 	 * 
