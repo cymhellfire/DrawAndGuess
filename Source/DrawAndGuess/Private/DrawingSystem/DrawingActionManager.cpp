@@ -41,7 +41,10 @@ void UDrawingActionManager::Undo()
 	// Redraw with left actions
 	for (UDrawingActionBase* DrawingActionBase : DrawingActionStack)
 	{
-		DrawingActionBase->ApplyToCanvas();
+		if (DrawingActionBase->HasCanvasToDraw())
+		{
+			DrawingActionBase->ApplyToCanvas();
+		}
 	}
 
 	// Destruct undo action

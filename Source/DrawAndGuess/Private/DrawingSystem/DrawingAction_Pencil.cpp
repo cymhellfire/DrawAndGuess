@@ -3,7 +3,6 @@
 #include "Actors/DrawingCanvas.h"
 #include "Engine/Canvas.h"
 #include "Kismet/KismetRenderingLibrary.h"
-#include "Pawns/DrawingBrush.h"
 
 void UDrawingAction_Pencil::ApplyToCanvas()
 {
@@ -11,6 +10,12 @@ void UDrawingAction_Pencil::ApplyToCanvas()
 
 	// Draw all points recorded
 	DrawBrushAtPoints(DrawPoints);
+}
+
+void UDrawingAction_Pencil::AddInputPoint(FVector2D NewPoint)
+{
+	// Append this new point to existing line
+	AppendDrawPoint(NewPoint);
 }
 
 void UDrawingAction_Pencil::ApplyToCanvasIncremental(FVector2D NewPoint)
@@ -72,15 +77,6 @@ void UDrawingAction_Pencil::AppendDrawPoint(FVector2D NewPoint)
 
 	// Immediately draw the new point to canvas
 	ApplyToCanvasIncremental(NewPoint);
-}
-
-void UDrawingAction_Pencil::CopyBrushSetting(ADrawingBrush* Brush)
-{
-	BrushSettings = FDrawingBrushSettings{
-		Brush->GetBrushTexture(),
-		Brush->GetBrushSize(),
-		Brush->GetBrushColor()
-	};
 }
 
 void UDrawingAction_Pencil::ApplyBrushSettingsToMaterial(UMaterialInstanceDynamic* TargetMaterial)

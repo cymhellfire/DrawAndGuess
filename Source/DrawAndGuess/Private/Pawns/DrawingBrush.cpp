@@ -7,7 +7,7 @@
 #include "EngineUtils.h"
 #include "Actors/DrawingCanvas.h"
 #include "DrawingSystem/DrawingActionManager.h"
-#include "DrawingSystem/DrawingAction_Pencil.h"
+#include "DrawingSystem/DrawingActionBase.h"
 #include "Engine/Canvas.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetRenderingLibrary.h"
@@ -40,25 +40,6 @@ void ADrawingBrush::BeginPlay()
 	}
 }
 
-void ADrawingBrush::DrawBrush(UTextureRenderTarget2D* RenderTarget, FVector2D Location)
-{
-	// Initial drawing requirements
-	UCanvas* DrawingCanvas;
-	FVector2D DrawingCanvasSize;
-	FDrawToRenderTargetContext NewContext;
-	UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(this, RenderTarget, DrawingCanvas, DrawingCanvasSize, NewContext);
-
-	// Calculate draw location
-	FVector2D DrawLocation = DrawingCanvasSize * Location - BrushSize / 2;
-	FVector2D DrawBrushSize(BrushSize);
-
-	// Draw texture
-	DrawingCanvas->K2_DrawMaterial(BrushMaterialInstance, DrawLocation, DrawBrushSize, FVector2D::ZeroVector);
-
-	// Apply canvas
-	UKismetRenderingLibrary::EndDrawCanvasToRenderTarget(this, NewContext);
-}
-
 void ADrawingBrush::OnDrawButtonPressed()
 {
 	bDrawing = true;
@@ -69,14 +50,8 @@ void ADrawingBrush::OnDrawButtonPressed()
 	{
 		if (UDrawingActionManager* DrawingActionManager = MyPlayerController->GetLocalPlayer()->GetSubsystem<UDrawingActionManager>())
 		{
-			CurrentDrawAction = Cast<UDrawingAction_Pencil>(DrawingActionManager->CreateDrawingAction(DAT_Pencil));
-			CurrentDrawAction->CopyBrushSetting(this);
-
-			// Temp code
-			for (TActorIterator<ADrawingCanvas> Iter(GetWorld()); Iter; ++Iter)
-			{
-				CurrentDrawAction->SetParentCanvas(*Iter);
-			}
+			CurrentDrawAction = DrawingActionManager->CreateDrawingAction(DrawingActionType);
+			CurrentDrawAction->CopyBrushSettings(this);
 		}
 	}
 }
@@ -149,9 +124,18 @@ void ADrawingBrush::Tick(float DeltaTime)
 						FVector2D UVCoordinate;
 						UGameplayStatics::FindCollisionUV(CursorRayHitResult, 0, UVCoordinate);
 
-						// Draw brush
-						//DrawBrush(DrawingCanvas->GetCanvasRenderTarget(), UVCoordinate);
-						CurrentDrawAction->AppendDrawPoint(UVCoordinate);
+						// Set the parent canvas to drawing action if not done yet
+						if (!CurrentDrawAction->HasCanvasToDraw())
+						{
+							CurrentDrawAction->SetParentCanvas(DrawingCanvas);
+						}
+
+						// DO NOT draw lines across multiple canvas
+						if (CurrentDrawAction->GetParentCanvas() == DrawingCanvas)
+						{
+							// Pass input to current drawing action
+							CurrentDrawAction->AddInputPoint(UVCoordinate);
+						}
 					}
 				}
 			}

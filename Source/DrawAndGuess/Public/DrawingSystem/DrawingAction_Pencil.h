@@ -13,16 +13,15 @@ public:
 
 	virtual void ApplyToCanvas() override;
 
-	/**
-	 * Append a new point to pencil line.
-	 *
-	 * @param NewPoint			New point to draw at.
-	 */
-	void AppendDrawPoint(FVector2D NewPoint);
-
-	void CopyBrushSetting(class ADrawingBrush* Brush);
+	virtual void AddInputPoint(FVector2D NewPoint) override;
 
 protected:
+	/**
+	* Append a new point to pencil line.
+	*
+	* @param NewPoint			New point to draw at.
+	*/
+	void AppendDrawPoint(FVector2D NewPoint);
 
 	/**
 	 * Incrementally apply new points to canvas.
@@ -48,7 +47,5 @@ protected:
 	void ApplyBrushSettingsToMaterial(UMaterialInstanceDynamic* TargetMaterial);
 
 protected:
-	FDrawingBrushSettings BrushSettings;
-
 	TArray<FVector2D> DrawPoints;
 };

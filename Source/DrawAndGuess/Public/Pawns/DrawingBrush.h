@@ -3,10 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DrawingSystem/DrawingSystemCommon.h"
 #include "GameFramework/Pawn.h"
 #include "DrawingBrush.generated.h"
 
-class UDrawingAction_Pencil;
+class UDrawingActionBase;
 
 UCLASS()
 class DRAWANDGUESS_API ADrawingBrush : public APawn
@@ -20,14 +21,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	/**
-	 * Draw a texture to render target with current brush setting.
-	 * 
-	 * @param RenderTarget		Render target to draw on.
-	 * @param Location			UV coordinate [0.0 - 1.0] to draw texture on render target.
-	 */
-	void DrawBrush(UTextureRenderTarget2D* RenderTarget, FVector2D Location);
 
 	void OnDrawButtonPressed();
 	void OnDrawButtonReleased();
@@ -74,11 +67,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DrawingBrush")
 	FLinearColor BrushColor;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DrawingBrush")
+	TEnumAsByte<EDrawingActionType> DrawingActionType;
+
 	UPROPERTY(Transient)
 	UMaterialInstanceDynamic* BrushMaterialInstance;
 
 	bool bDrawing;
 	bool bPendingDrawing;
 
-	UDrawingAction_Pencil* CurrentDrawAction;
+	UDrawingActionBase* CurrentDrawAction;
 };
