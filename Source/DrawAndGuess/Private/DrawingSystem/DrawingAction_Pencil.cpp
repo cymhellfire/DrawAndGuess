@@ -62,6 +62,11 @@ void UDrawingAction_Pencil::CopyBrushSettings(ADrawingBrush* Brush)
 	Super::CopyBrushSettings(Brush);
 }
 
+bool UDrawingAction_Pencil::IsActionValid()
+{
+	return ParentCanvas && DrawPoints.Num() > 0;
+}
+
 TArray<FVector2D> UDrawingAction_Pencil::InterpolateDrawingPoints(FVector2D Origin, FVector2D Dest, float Threshold)
 {
 	TArray<FVector2D> Result;

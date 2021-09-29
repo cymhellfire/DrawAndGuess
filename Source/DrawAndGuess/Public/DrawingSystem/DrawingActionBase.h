@@ -52,6 +52,13 @@ public:
 	 */
 	virtual void ApplyToCanvas();
 
+	/**
+	 * Check if this drawing action is valid to draw.
+	 *
+	 * @return Validation result.
+	 */
+	virtual bool IsActionValid() { return false; }
+
 protected:
 	ADrawingCanvas* ParentCanvas;
 

@@ -19,12 +19,20 @@ UDrawingActionBase* UDrawingActionManager::CreateDrawingAction(EDrawingActionTyp
 	default: ;
 	}
 
-	if (NewAction != nullptr)
+	return NewAction;
+}
+
+bool UDrawingActionManager::SubmitDrawingAction(UDrawingActionBase* DrawingAction)
+{
+	const bool Result = DrawingAction->IsActionValid();
+
+	// Only valid action can be accepted
+	if (Result)
 	{
-		DrawingActionStack.Add(NewAction);
+		DrawingActionStack.Add(DrawingAction);
 	}
 
-	return NewAction;
+	return Result;
 }
 
 void UDrawingActionManager::Undo()

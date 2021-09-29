@@ -20,6 +20,8 @@ public:
 
 	virtual void CopyBrushSettings(ADrawingBrush* Brush) override;
 
+	virtual bool IsActionValid() override;
+
 protected:
 	/**
 	 * Interpolate extra points between origin and destination.

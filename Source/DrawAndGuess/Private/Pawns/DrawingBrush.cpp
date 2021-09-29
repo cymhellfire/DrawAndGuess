@@ -96,6 +96,12 @@ void ADrawingBrush::HandleDrawingInputEvent(FDrawingInputEvent InputEvent)
 		{
 			CurrentDrawAction->StopInput(InputEvent.InputLocation);
 
+			// Submit current action
+			if (UDrawingActionManager* DrawingActionManager = GetDrawingActionManager())
+			{
+				DrawingActionManager->SubmitDrawingAction(CurrentDrawAction);
+			}
+
 			// Release the current action
 			CurrentDrawAction = nullptr;
 		}
@@ -116,19 +122,25 @@ void ADrawingBrush::HandleDrawingInputEvent(FDrawingInputEvent InputEvent)
 	}
 }
 
+UDrawingActionManager* ADrawingBrush::GetDrawingActionManager() const
+{
+	if (APlayerController* MyPlayerController = Cast<APlayerController>(GetController()))
+	{
+		return MyPlayerController->GetLocalPlayer()->GetSubsystem<UDrawingActionManager>();
+	}
+
+	return nullptr;
+}
+
 void ADrawingBrush::OnDrawButtonPressed()
 {
 	bDrawPressed = true;
-	// bPendingDrawing = true;
 
 	// Create the action
-	if (APlayerController* MyPlayerController = Cast<APlayerController>(GetController()))
+	if (UDrawingActionManager* DrawingActionManager = GetDrawingActionManager())
 	{
-		if (UDrawingActionManager* DrawingActionManager = MyPlayerController->GetLocalPlayer()->GetSubsystem<UDrawingActionManager>())
-		{
-			CurrentDrawAction = DrawingActionManager->CreateDrawingAction(DrawingActionType);
-			CurrentDrawAction->CopyBrushSettings(this);
-		}
+		CurrentDrawAction = DrawingActionManager->CreateDrawingAction(DrawingActionType);
+		CurrentDrawAction->CopyBrushSettings(this);
 	}
 
 	ADrawingCanvas* DrawingCanvas = nullptr;
@@ -146,18 +158,17 @@ void ADrawingBrush::OnDrawButtonPressed()
 void ADrawingBrush::OnDrawButtonReleased()
 {
 	bDrawPressed = false;
-	// bPendingStopInput = true;
 
 	ADrawingCanvas* DrawingCanvas = CurrentDrawAction->GetParentCanvas();
 	FVector2D DrawingPoint = GetDrawingPoint(DrawingCanvas);
-	if (DrawingPoint != NullVector)
-	{
+	// if (DrawingPoint != NullVector)
+	// {
 		InputEventQueue.Add(FDrawingInputEvent{
 			DrawingPoint,
 			EDrawingInputType::DIE_Released,
 			DrawingCanvas
 		});
-	}
+	//}
 }
 
 void ADrawingBrush::OnUndoPressed()

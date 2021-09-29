@@ -25,6 +25,8 @@ public:
 
 	virtual void ApplyToCanvas() override;
 
+	virtual bool IsActionValid() override;
+
 protected:
 
 	void DrawLine();

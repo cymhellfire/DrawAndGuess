@@ -9,6 +9,7 @@
 
 class UDrawingActionBase;
 class ADrawingCanvas;
+class UDrawingActionManager;
 
 UCLASS()
 class DRAWANDGUESS_API ADrawingBrush : public APawn
@@ -35,6 +36,8 @@ protected:
 	FVector2D GetDrawingPoint(ADrawingCanvas*& DesiredCanvas);
 
 	void HandleDrawingInputEvent(FDrawingInputEvent InputEvent);
+
+	UDrawingActionManager* GetDrawingActionManager() const;
 
 	void OnDrawButtonPressed();
 	void OnDrawButtonReleased();

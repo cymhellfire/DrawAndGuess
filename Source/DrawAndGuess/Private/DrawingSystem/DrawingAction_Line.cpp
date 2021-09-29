@@ -33,10 +33,14 @@ void UDrawingAction_Line::UpdatePreviewPoint(FVector2D NewPoint)
 
 void UDrawingAction_Line::StopInput(FVector2D StopPoint)
 {
-	// Record the destination
-	Destination = StopPoint;
+	// Only draw the line if origin and destination are valid
+	if (Origin != NullVector && StopPoint != NullVector)
+	{
+		// Record the destination
+		Destination = StopPoint;
 
-	DrawLine();
+		DrawLine();
+	}
 
 	// Clear last preview
 	ParentCanvas->ClearPreview();
@@ -47,6 +51,11 @@ void UDrawingAction_Line::ApplyToCanvas()
 	Super::ApplyToCanvas();
 
 	DrawLine();
+}
+
+bool UDrawingAction_Line::IsActionValid()
+{
+	return ParentCanvas && (Origin != NullVector) && (Destination != NullVector); 
 }
 
 void UDrawingAction_Line::DrawLine()
