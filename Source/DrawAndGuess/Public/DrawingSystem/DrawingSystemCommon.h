@@ -10,6 +10,7 @@ enum EDrawingActionType
 {
 	DAT_Pencil,
 	DAT_Line,
+	DAT_Box,
 };
 
 UENUM(BlueprintType)

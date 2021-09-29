@@ -2,6 +2,7 @@
 
 #include "Actors/DrawingCanvas.h"
 #include "DrawingSystem/DrawingActionBase.h"
+#include "DrawingSystem/DrawingAction_Box.h"
 #include "DrawingSystem/DrawingAction_Line.h"
 #include "DrawingSystem/DrawingAction_Pencil.h"
 
@@ -15,6 +16,9 @@ UDrawingActionBase* UDrawingActionManager::CreateDrawingAction(EDrawingActionTyp
 		break;
 	case DAT_Line:
 		NewAction = NewObject<UDrawingAction_Line>(GetWorld());
+		break;
+	case DAT_Box:
+		NewAction = NewObject<UDrawingAction_Box>(GetWorld());
 		break;
 	default: ;
 	}
