@@ -63,6 +63,7 @@ FVector2D ADrawingBrush::GetDrawingPoint(ADrawingCanvas*& DesiredCanvas)
 					if (DesiredCanvas == nullptr)
 					{
 						DesiredCanvas = DrawingCanvas;
+						DrawingPoint = UVCoordinate;
 					}
 					else
 					{
@@ -80,10 +81,45 @@ FVector2D ADrawingBrush::GetDrawingPoint(ADrawingCanvas*& DesiredCanvas)
 	return DrawingPoint;
 }
 
+void ADrawingBrush::HandleDrawingInputEvent(FDrawingInputEvent InputEvent)
+{
+	switch (InputEvent.InputType)
+	{
+	case DIE_Pressed:
+		// Setup the parent canvas
+		CurrentDrawAction->SetParentCanvas(InputEvent.Canvas);
+		// Pass in input location to action
+		CurrentDrawAction->AddInputPoint(InputEvent.InputLocation);
+		break;
+	case DIE_Released:
+		if (CurrentDrawAction != nullptr)
+		{
+			CurrentDrawAction->StopInput(InputEvent.InputLocation);
+
+			// Release the current action
+			CurrentDrawAction = nullptr;
+		}
+		break;
+	case DIE_Dragged:
+		if (CurrentDrawAction != nullptr)
+		{
+			// The parent canvas might be null
+			if (!CurrentDrawAction->HasCanvasToDraw())
+			{
+				CurrentDrawAction->SetParentCanvas(InputEvent.Canvas);
+			}
+
+			CurrentDrawAction->UpdatePreviewPoint(InputEvent.InputLocation);
+		}
+		break;
+	default: ;
+	}
+}
+
 void ADrawingBrush::OnDrawButtonPressed()
 {
-	bDrawing = true;
-	bPendingDrawing = true;
+	bDrawPressed = true;
+	// bPendingDrawing = true;
 
 	// Create the action
 	if (APlayerController* MyPlayerController = Cast<APlayerController>(GetController()))
@@ -94,12 +130,34 @@ void ADrawingBrush::OnDrawButtonPressed()
 			CurrentDrawAction->CopyBrushSettings(this);
 		}
 	}
+
+	ADrawingCanvas* DrawingCanvas = nullptr;
+	FVector2D DrawingPoint = GetDrawingPoint(DrawingCanvas);
+	if (DrawingPoint != NullVector)
+	{
+		InputEventQueue.Add(FDrawingInputEvent{
+			DrawingPoint,
+			EDrawingInputType::DIE_Pressed,
+			DrawingCanvas
+		});
+	}
 }
 
 void ADrawingBrush::OnDrawButtonReleased()
 {
-	bDrawing = false;
-	bPendingStopInput = true;
+	bDrawPressed = false;
+	// bPendingStopInput = true;
+
+	ADrawingCanvas* DrawingCanvas = CurrentDrawAction->GetParentCanvas();
+	FVector2D DrawingPoint = GetDrawingPoint(DrawingCanvas);
+	if (DrawingPoint != NullVector)
+	{
+		InputEventQueue.Add(FDrawingInputEvent{
+			DrawingPoint,
+			EDrawingInputType::DIE_Released,
+			DrawingCanvas
+		});
+	}
 }
 
 void ADrawingBrush::OnUndoPressed()
@@ -115,10 +173,18 @@ void ADrawingBrush::OnUndoPressed()
 
 void ADrawingBrush::OnCursorAxisChanged(float Input)
 {
-	if (FMath::Abs(Input) > 0.01f && bDrawing)
+	if (FMath::Abs(Input) > 0.01f && bDrawPressed)
 	{
-		bPendingDrawing = true;
-		bPreviewDirty = true;
+		ADrawingCanvas* DrawingCanvas = CurrentDrawAction->GetParentCanvas();
+		FVector2D DrawingPoint = GetDrawingPoint(DrawingCanvas);
+		if (DrawingPoint != NullVector)
+		{
+			InputEventQueue.Add(FDrawingInputEvent{
+				DrawingPoint,
+				EDrawingInputType::DIE_Dragged,
+				DrawingCanvas
+			});
+		}
 	}
 }
 
@@ -149,46 +215,16 @@ void ADrawingBrush::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bPendingDrawing)
+	// Process all pending input events
+	if (InputEventQueue.Num() > 0)
 	{
-		ADrawingCanvas* DrawingCanvas = CurrentDrawAction->GetParentCanvas();
-		FVector2D DrawingPoint = GetDrawingPoint(DrawingCanvas);
-		// Record the canvas if not done yet
-		if (!CurrentDrawAction->HasCanvasToDraw())
+		for (FDrawingInputEvent InputEvent : InputEventQueue)
 		{
-			CurrentDrawAction->SetParentCanvas(DrawingCanvas);
+			HandleDrawingInputEvent(InputEvent);
 		}
 
-		if (DrawingPoint != NullVector)
-		{
-			CurrentDrawAction->AddInputPoint(DrawingPoint);
-		}
-
-		bPendingDrawing = false;
-	}
-
-	if (bPreviewDirty)
-	{
-		ADrawingCanvas* DrawingCanvas = CurrentDrawAction->GetParentCanvas();
-		FVector2D DrawingPoint = GetDrawingPoint(DrawingCanvas);
-
-		if (DrawingPoint != NullVector)
-		{
-			CurrentDrawAction->UpdatePreviewPoint(DrawingPoint);
-		}
-		bPreviewDirty = false;
-	}
-
-	if (bPendingStopInput)
-	{
-		ADrawingCanvas* DrawingCanvas = CurrentDrawAction->GetParentCanvas();
-		FVector2D DrawingPoint = GetDrawingPoint(DrawingCanvas);
-
-		if (DrawingPoint != NullVector)
-		{
-			CurrentDrawAction->StopInput(DrawingPoint);
-		}
-		bPendingStopInput = false;
+		// Clear the queue
+		InputEventQueue.Empty();
 	}
 }
 

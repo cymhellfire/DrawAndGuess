@@ -14,6 +14,8 @@ public:
 
 	virtual void ApplyToCanvas() override;
 
+	virtual void UpdatePreviewPoint(FVector2D NewPoint) override;
+
 	virtual void AddInputPoint(FVector2D NewPoint) override;
 
 	virtual void CopyBrushSettings(ADrawingBrush* Brush) override;

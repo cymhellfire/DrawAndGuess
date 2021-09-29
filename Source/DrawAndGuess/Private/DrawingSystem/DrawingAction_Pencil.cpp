@@ -28,6 +28,12 @@ void UDrawingAction_Pencil::ApplyToCanvas()
 	DrawBrushAtPoints(DrawPoints);
 }
 
+void UDrawingAction_Pencil::UpdatePreviewPoint(FVector2D NewPoint)
+{
+	// Pencil will directly append new point into existing line
+	AddInputPoint(NewPoint);
+}
+
 void UDrawingAction_Pencil::AddInputPoint(FVector2D NewPoint)
 {
 	// Append this new point to existing line

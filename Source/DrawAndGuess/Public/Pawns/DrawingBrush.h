@@ -34,6 +34,8 @@ protected:
 	 */
 	FVector2D GetDrawingPoint(ADrawingCanvas*& DesiredCanvas);
 
+	void HandleDrawingInputEvent(FDrawingInputEvent InputEvent);
+
 	void OnDrawButtonPressed();
 	void OnDrawButtonReleased();
 
@@ -85,10 +87,8 @@ protected:
 	UPROPERTY(Transient)
 	UMaterialInstanceDynamic* BrushMaterialInstance;
 
-	bool bDrawing;
-	bool bPendingDrawing;
-	bool bPendingStopInput;
-	bool bPreviewDirty;
+	uint8 bDrawPressed : 1;
 
 	UDrawingActionBase* CurrentDrawAction;
+	TArray<FDrawingInputEvent> InputEventQueue;
 };
