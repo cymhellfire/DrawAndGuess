@@ -8,9 +8,23 @@ public class DrawAndGuess : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Slate", "SlateCore", "UMG", "AppFramework" });
+		PublicDependencyModuleNames.AddRange(
+			new string[] {
+				"Core",
+				"CoreUObject",
+				"Engine",
+				"InputCore",
+				"Slate",
+				"SlateCore",
+				"UMG",
+				"AppFramework",
+				"OnlineSubsystem",
+				"OnlineSubsystemUtils",
+			});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		
+		DynamicallyLoadedModuleNames.Add("OnlineSubsystemNull");
 
 		PublicIncludePaths.AddRange(new string[] {"DrawAndGuess/Public"});
 
