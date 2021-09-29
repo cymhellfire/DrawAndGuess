@@ -27,6 +27,13 @@ public:
 	virtual void AddInputPoint(FVector2D NewPoint) {}
 
 	/**
+	 * Update the preview point location to refresh this action preview.
+	 *
+	 * @param NewPoint	New point to preview the action result.
+	 */
+	virtual void UpdatePreviewPoint(FVector2D NewPoint) {}
+
+	/**
 	 * Tell this action that no input will be received.
 	 *
 	 * @param StopPoint		The point when input stop.

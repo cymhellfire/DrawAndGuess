@@ -9,19 +9,25 @@
 
 UDrawingAction_Line::UDrawingAction_Line()
 {
-	Origin = Destination = NullVector;
+	Origin = Destination = PreviewPoint = NullVector;
 }
 
 void UDrawingAction_Line::AddInputPoint(FVector2D NewPoint)
 {
-	// Record origin first
+	// Record origin
 	if (Origin == NullVector)
 	{
 		Origin = NewPoint;
 	}
-	else if (Destination == NullVector)
+}
+
+void UDrawingAction_Line::UpdatePreviewPoint(FVector2D NewPoint)
+{
+	PreviewPoint = NewPoint;
+
+	if (Origin != NullVector)
 	{
-		Destination = NewPoint;
+		DrawPreviewLine();
 	}
 }
 
@@ -31,6 +37,9 @@ void UDrawingAction_Line::StopInput(FVector2D StopPoint)
 	Destination = StopPoint;
 
 	DrawLine();
+
+	// Clear last preview
+	ParentCanvas->ClearPreview();
 }
 
 void UDrawingAction_Line::ApplyToCanvas()
@@ -50,6 +59,27 @@ void UDrawingAction_Line::DrawLine()
 
 	FVector2D OrgInCanvas = DrawingCanvasSize * Origin;
 	FVector2D DestInCanvas = DrawingCanvasSize * Destination;
+
+	// Draw texture
+	DrawingCanvas->K2_DrawLine(OrgInCanvas, DestInCanvas, BrushSettings.BrushSize, BrushSettings.BrushColor);
+
+	// Apply canvas
+	UKismetRenderingLibrary::EndDrawCanvasToRenderTarget(GetWorld(), NewContext);
+}
+
+void UDrawingAction_Line::DrawPreviewLine()
+{
+	// Clear last preview
+	ParentCanvas->ClearPreview();
+
+	// Initial drawing requirements
+	UCanvas* DrawingCanvas;
+	FVector2D DrawingCanvasSize;
+	FDrawToRenderTargetContext NewContext;
+	UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(GetWorld(), ParentCanvas->GetCanvasPreviewRenderTarget(), DrawingCanvas, DrawingCanvasSize, NewContext);
+
+	FVector2D OrgInCanvas = DrawingCanvasSize * Origin;
+	FVector2D DestInCanvas = DrawingCanvasSize * PreviewPoint;
 
 	// Draw texture
 	DrawingCanvas->K2_DrawLine(OrgInCanvas, DestInCanvas, BrushSettings.BrushSize, BrushSettings.BrushColor);

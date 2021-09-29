@@ -118,6 +118,7 @@ void ADrawingBrush::OnCursorAxisChanged(float Input)
 	if (FMath::Abs(Input) > 0.01f && bDrawing)
 	{
 		bPendingDrawing = true;
+		bPreviewDirty = true;
 	}
 }
 
@@ -164,6 +165,18 @@ void ADrawingBrush::Tick(float DeltaTime)
 		}
 
 		bPendingDrawing = false;
+	}
+
+	if (bPreviewDirty)
+	{
+		ADrawingCanvas* DrawingCanvas = CurrentDrawAction->GetParentCanvas();
+		FVector2D DrawingPoint = GetDrawingPoint(DrawingCanvas);
+
+		if (DrawingPoint != NullVector)
+		{
+			CurrentDrawAction->UpdatePreviewPoint(DrawingPoint);
+		}
+		bPreviewDirty = false;
 	}
 
 	if (bPendingStopInput)

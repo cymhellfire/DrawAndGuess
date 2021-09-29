@@ -51,8 +51,18 @@ void ADrawingCanvas::BeginPlay()
 		CanvasRenderTarget->InitAutoFormat(CanvasSetting.Width, CanvasSetting.Height);
 		CanvasRenderTarget->UpdateResourceImmediate(true);
 
+		// Create preview render target
+		CanvasPreviewRenderTarget = NewObject<UTextureRenderTarget2D>(GetWorld());
+		check(CanvasPreviewRenderTarget);
+		CanvasPreviewRenderTarget->RenderTargetFormat = CanvasSetting.RenderTargetFormat;
+		CanvasPreviewRenderTarget->ClearColor = FLinearColor::Transparent;
+		CanvasPreviewRenderTarget->bAutoGenerateMips = false;
+		CanvasPreviewRenderTarget->InitAutoFormat(CanvasSetting.Width, CanvasSetting.Height);
+		CanvasPreviewRenderTarget->UpdateResourceImmediate(true);
+
 		// Setup render target
 		CanvasMaterialInstance->SetTextureParameterValue(TEXT("RenderTarget"), CanvasRenderTarget);
+		CanvasMaterialInstance->SetTextureParameterValue(TEXT("PreviewRenderTarget"), CanvasPreviewRenderTarget);
 	}
 
 	// Create public brush material instance
@@ -77,5 +87,10 @@ void ADrawingCanvas::Tick(float DeltaTime)
 void ADrawingCanvas::Clear()
 {
 	UKismetRenderingLibrary::ClearRenderTarget2D(this, CanvasRenderTarget, CanvasSetting.ClearColor);
+}
+
+void ADrawingCanvas::ClearPreview()
+{
+	UKismetRenderingLibrary::ClearRenderTarget2D(this, CanvasPreviewRenderTarget, FLinearColor::Transparent);
 }
 

@@ -88,6 +88,7 @@ protected:
 	bool bDrawing;
 	bool bPendingDrawing;
 	bool bPendingStopInput;
+	bool bPreviewDirty;
 
 	UDrawingActionBase* CurrentDrawAction;
 };

@@ -52,6 +52,8 @@ public:
 
 	UTextureRenderTarget2D* GetCanvasRenderTarget() const { return CanvasRenderTarget; }
 
+	UTextureRenderTarget2D* GetCanvasPreviewRenderTarget() const { return CanvasPreviewRenderTarget; }
+
 	/* Get the actual size of canvas render target. */
 	FVector2D GetCanvasSize() const { return FVector2D(CanvasSetting.Width, CanvasSetting.Height); }
 
@@ -66,6 +68,11 @@ public:
 	 * Reset canvas to blank state.
 	 */
 	void Clear();
+
+	/**
+	 * Clear the preview canvas.
+	 */
+	void ClearPreview();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Canvas")
@@ -88,4 +95,7 @@ protected:
 
 	UPROPERTY(Transient)
 	UTextureRenderTarget2D* CanvasRenderTarget;
+
+	UPROPERTY(Transient)
+	UTextureRenderTarget2D* CanvasPreviewRenderTarget;
 };

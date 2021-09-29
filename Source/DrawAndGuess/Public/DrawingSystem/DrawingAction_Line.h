@@ -19,6 +19,8 @@ public:
 
 	virtual void AddInputPoint(FVector2D NewPoint) override;
 
+	virtual void UpdatePreviewPoint(FVector2D NewPoint) override;
+
 	virtual void StopInput(FVector2D StopPoint) override;
 
 	virtual void ApplyToCanvas() override;
@@ -27,8 +29,11 @@ protected:
 
 	void DrawLine();
 
+	void DrawPreviewLine();
+
 protected:
 
 	FVector2D Origin;
 	FVector2D Destination;
+	FVector2D PreviewPoint;
 };
