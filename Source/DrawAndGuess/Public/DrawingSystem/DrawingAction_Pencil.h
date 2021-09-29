@@ -62,7 +62,7 @@ protected:
 protected:
 	TArray<FVector2D> DrawPoints;
 
-	FVector2D LastPoint = FVector2D(-1, -1);
+	FVector2D LastPoint;
 
 	float InterpolationThreshold;
 };

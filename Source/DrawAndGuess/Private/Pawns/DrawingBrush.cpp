@@ -40,6 +40,46 @@ void ADrawingBrush::BeginPlay()
 	}
 }
 
+FVector2D ADrawingBrush::GetDrawingPoint(ADrawingCanvas*& DesiredCanvas)
+{
+	FVector2D DrawingPoint = NullVector;
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		FHitResult CursorRayHitResult;
+		if (PlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, CursorRayHitResult))
+		{
+			ADrawingCanvas* DrawingCanvas = Cast<ADrawingCanvas>(CursorRayHitResult.Actor);
+			if (DrawingCanvas)
+			{
+				FCollisionQueryParams QueryParams {TEXT("DrawBrushTrace"), true, this};
+				QueryParams.bReturnFaceIndex = true;
+				if (GetWorld()->LineTraceSingleByChannel(CursorRayHitResult, CursorRayHitResult.TraceStart, CursorRayHitResult.TraceEnd, ECollisionChannel::ECC_Visibility, QueryParams))
+				{
+					FVector2D UVCoordinate;
+					UGameplayStatics::FindCollisionUV(CursorRayHitResult, 0, UVCoordinate);
+
+					// Change the canvas pointer if no canvas is passed in
+					if (DesiredCanvas == nullptr)
+					{
+						DesiredCanvas = DrawingCanvas;
+					}
+					else
+					{
+						// Only return the drawing point if canvas matched
+						if (DrawingCanvas == DesiredCanvas)
+						{
+							DrawingPoint = UVCoordinate;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return DrawingPoint;
+}
+
 void ADrawingBrush::OnDrawButtonPressed()
 {
 	bDrawing = true;
@@ -59,6 +99,7 @@ void ADrawingBrush::OnDrawButtonPressed()
 void ADrawingBrush::OnDrawButtonReleased()
 {
 	bDrawing = false;
+	bPendingStopInput = true;
 }
 
 void ADrawingBrush::OnUndoPressed()
@@ -109,39 +150,32 @@ void ADrawingBrush::Tick(float DeltaTime)
 
 	if (bPendingDrawing)
 	{
-		if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+		ADrawingCanvas* DrawingCanvas = CurrentDrawAction->GetParentCanvas();
+		FVector2D DrawingPoint = GetDrawingPoint(DrawingCanvas);
+		// Record the canvas if not done yet
+		if (!CurrentDrawAction->HasCanvasToDraw())
 		{
-			FHitResult CursorRayHitResult;
-			if (PlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, CursorRayHitResult))
-			{
-				ADrawingCanvas* DrawingCanvas = Cast<ADrawingCanvas>(CursorRayHitResult.Actor);
-				if (DrawingCanvas)
-				{
-					FCollisionQueryParams QueryParams {TEXT("DrawBrushTrace"), true, this};
-					QueryParams.bReturnFaceIndex = true;
-					if (GetWorld()->LineTraceSingleByChannel(CursorRayHitResult, CursorRayHitResult.TraceStart, CursorRayHitResult.TraceEnd, ECollisionChannel::ECC_Visibility, QueryParams))
-					{
-						FVector2D UVCoordinate;
-						UGameplayStatics::FindCollisionUV(CursorRayHitResult, 0, UVCoordinate);
+			CurrentDrawAction->SetParentCanvas(DrawingCanvas);
+		}
 
-						// Set the parent canvas to drawing action if not done yet
-						if (!CurrentDrawAction->HasCanvasToDraw())
-						{
-							CurrentDrawAction->SetParentCanvas(DrawingCanvas);
-						}
-
-						// DO NOT draw lines across multiple canvas
-						if (CurrentDrawAction->GetParentCanvas() == DrawingCanvas)
-						{
-							// Pass input to current drawing action
-							CurrentDrawAction->AddInputPoint(UVCoordinate);
-						}
-					}
-				}
-			}
+		if (DrawingPoint != NullVector)
+		{
+			CurrentDrawAction->AddInputPoint(DrawingPoint);
 		}
 
 		bPendingDrawing = false;
+	}
+
+	if (bPendingStopInput)
+	{
+		ADrawingCanvas* DrawingCanvas = CurrentDrawAction->GetParentCanvas();
+		FVector2D DrawingPoint = GetDrawingPoint(DrawingCanvas);
+
+		if (DrawingPoint != NullVector)
+		{
+			CurrentDrawAction->StopInput(DrawingPoint);
+		}
+		bPendingStopInput = false;
 	}
 }
 

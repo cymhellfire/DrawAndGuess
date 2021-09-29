@@ -16,6 +16,8 @@ UDrawingAction_Pencil::UDrawingAction_Pencil()
 			InterpolationThreshold = GameUserSettings->GetPencilInterpolateThreshold();
 		}
 	}
+
+	LastPoint = NullVector;
 }
 
 void UDrawingAction_Pencil::ApplyToCanvas()
@@ -28,7 +30,6 @@ void UDrawingAction_Pencil::ApplyToCanvas()
 
 void UDrawingAction_Pencil::AddInputPoint(FVector2D NewPoint)
 {
-	static FVector2D NullVector(-1, -1);
 	// Append this new point to existing line
 	if (InterpolationThreshold != 0.f && LastPoint != NullVector)
 	{

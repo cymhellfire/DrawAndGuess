@@ -9,6 +9,13 @@ UDAGGameUserSettings::UDAGGameUserSettings(const FObjectInitializer& ObjectIniti
 	PencilInterpolationThreshold = 0.1f;
 }
 
+void UDAGGameUserSettings::SetToDefaults()
+{
+	Super::SetToDefaults();
+
+	PencilInterpolationThreshold = 0.1f;
+}
+
 float UDAGGameUserSettings::GetPencilInterpolateThreshold() const
 {
 	return PencilInterpolationThreshold;

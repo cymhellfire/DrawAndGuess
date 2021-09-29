@@ -27,6 +27,13 @@ public:
 	virtual void AddInputPoint(FVector2D NewPoint) {}
 
 	/**
+	 * Tell this action that no input will be received.
+	 *
+	 * @param StopPoint		The point when input stop.
+	 */
+	virtual void StopInput(FVector2D StopPoint) {}
+
+	/**
 	 * Copy necessary settings from given drawing brush.
 	 *
 	 * @param Brush			The brush copy settings from.

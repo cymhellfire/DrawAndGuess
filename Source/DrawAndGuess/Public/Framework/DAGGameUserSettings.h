@@ -17,6 +17,8 @@ class DRAWANDGUESS_API UDAGGameUserSettings : public UGameUserSettings
 public:
 	UDAGGameUserSettings(const FObjectInitializer& ObjectInitializer);
 
+	virtual void SetToDefaults() override;
+
 	float GetPencilInterpolateThreshold() const;
 
 protected:
