@@ -21,7 +21,12 @@ public:
 
 	float GetPencilInterpolateThreshold() const;
 
+	FString GetPlayerName() const;
+
 protected:
 	UPROPERTY(config)
 	float PencilInterpolationThreshold;
+
+	UPROPERTY(config)
+	FString PlayerName;
 };

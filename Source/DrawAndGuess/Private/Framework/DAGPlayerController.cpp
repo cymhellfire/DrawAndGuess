@@ -2,6 +2,9 @@
 
 #include "Localization.h"
 #include "Framework/DAGGameInstance.h"
+#include "Framework/DAGGameUserSettings.h"
+#include "Framework/DAGPlayerState.h"
+#include "GameFramework/PlayerState.h"
 
 
 void ADAGPlayerController::ClientPreStartGame_Implementation()
@@ -46,9 +49,42 @@ void ADAGPlayerController::ClientReturnToMainMenuWithReason_Implementation(ERetu
 	}
 }
 
+void ADAGPlayerController::ClientUploadPlayerInfo_Implementation()
+{
+	if (GEngine != nullptr)
+	{
+		if (UDAGGameUserSettings* UserSettings = Cast<UDAGGameUserSettings>(GEngine->GetGameUserSettings()))
+		{
+			ServerReceivePlayerInfo(UserSettings->GetPlayerName());
+		}
+	}
+}
+
+void ADAGPlayerController::ServerReceivePlayerInfo_Implementation(const FString& InPlayerName)
+{
+	// Sync player name with uploaded data
+	if (APlayerState* MyPlayerState = GetPlayerState<APlayerState>())
+	{
+		MyPlayerState->SetPlayerName(InPlayerName);
+	}
+}
+
+void ADAGPlayerController::ClientRefreshLobbyInfo_Implementation()
+{
+	OnRefreshLobbyInfoRequested.Broadcast();
+}
+
 void ADAGPlayerController::HandleReturnToMainMenu()
 {
 	CleanupSessionOnReturnMain();
+}
+
+void ADAGPlayerController::ServerSetLobbyState_Implementation(EPlayerLobbyState NewState)
+{
+	if (ADAGPlayerState* MyPlayerState = GetPlayerState<ADAGPlayerState>())
+	{
+		MyPlayerState->SetLobbyState(NewState);
+	}
 }
 
 void ADAGPlayerController::CleanupSessionOnReturnMain()

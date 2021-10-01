@@ -20,6 +20,7 @@ public class DrawAndGuess : ModuleRules
 				"AppFramework",
 				"OnlineSubsystem",
 				"OnlineSubsystemUtils",
+				"NetCore",
 			});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

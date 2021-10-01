@@ -7,6 +7,7 @@ UDAGGameUserSettings::UDAGGameUserSettings(const FObjectInitializer& ObjectIniti
 	: Super(ObjectInitializer)
 {
 	PencilInterpolationThreshold = 0.1f;
+	PlayerName = TEXT("NewPlayer");
 }
 
 void UDAGGameUserSettings::SetToDefaults()
@@ -14,9 +15,15 @@ void UDAGGameUserSettings::SetToDefaults()
 	Super::SetToDefaults();
 
 	PencilInterpolationThreshold = 0.1f;
+	PlayerName = TEXT("NewPlayer");
 }
 
 float UDAGGameUserSettings::GetPencilInterpolateThreshold() const
 {
 	return PencilInterpolationThreshold;
+}
+
+FString UDAGGameUserSettings::GetPlayerName() const
+{
+	return PlayerName;
 }

@@ -12,3 +12,10 @@ namespace EReturnToMainMenuReason
 		HostLeft		UMETA(DisplayName="NetError_HostLeft"),
 	};
 }
+
+UENUM(BlueprintType)
+enum class EPlayerLobbyState : uint8
+{
+	PLS_Waiting,
+	PLS_Ready,
+};
