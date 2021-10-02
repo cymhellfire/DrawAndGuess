@@ -69,11 +69,6 @@ void ADAGPlayerController::ServerReceivePlayerInfo_Implementation(const FString&
 	}
 }
 
-void ADAGPlayerController::ClientRefreshLobbyInfo_Implementation()
-{
-	OnRefreshLobbyInfoRequested.Broadcast();
-}
-
 void ADAGPlayerController::HandleReturnToMainMenu()
 {
 	CleanupSessionOnReturnMain();

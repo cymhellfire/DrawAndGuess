@@ -4,6 +4,32 @@
 #include "Framework/DAGPlayerController.h"
 
 
+void ADAGGameStateBase::AddPlayerState(APlayerState* PlayerState)
+{
+	int32 OrgPlayerCount = PlayerArray.Num();
+
+	Super::AddPlayerState(PlayerState);
+
+	// Check if player count changed
+	if (PlayerArray.Num() != OrgPlayerCount)
+	{
+		OnPlayerStateRegistered.Broadcast(PlayerState);
+	}
+}
+
+void ADAGGameStateBase::RemovePlayerState(APlayerState* PlayerState)
+{
+	int32 OrgPlayerCount = PlayerArray.Num();
+
+	Super::RemovePlayerState(PlayerState);
+
+	// Check if player count changed
+	if (OrgPlayerCount != PlayerArray.Num())
+	{
+		OnPlayerStateUnregistered.Broadcast(PlayerState);
+	}
+}
+
 void ADAGGameStateBase::FinishGameAndReturnToMainMenu()
 {
 	if (AuthorityGameMode)

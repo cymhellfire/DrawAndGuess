@@ -21,14 +21,8 @@ public:
 
 	void NotifyClientGameWillStart();
 
-	void NotifyClientRefreshLobbyInfo();
-
 	UFUNCTION(BlueprintCallable, Category="GameMode")
 	TArray<ADAGPlayerController*> GetAllPlayerControllers() const { return PlayerControllerList; }
-
-protected:
-	UFUNCTION()
-	void OnAnyPlayerLobbyInfoChanged();
 
 protected:
 

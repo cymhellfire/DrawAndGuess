@@ -14,7 +14,6 @@ void ADAGPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	SharedParams.bIsPushBased = true;
 
 	DOREPLIFETIME_WITH_PARAMS(ADAGPlayerState, LobbyState, SharedParams);
-	DOREPLIFETIME_WITH_PARAMS(ADAGPlayerState, NetRequestCount, SharedParams);
 }
 
 void ADAGPlayerState::SetLobbyState_Implementation(EPlayerLobbyState NewLobbyState)
@@ -27,29 +26,24 @@ void ADAGPlayerState::SetLobbyState_Implementation(EPlayerLobbyState NewLobbySta
 	LobbyState = NewLobbyState;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ADAGPlayerState, LobbyState, this);
 
-	UE_LOG(LogInit, Log, TEXT("Server set LobbyState to %s"), *UEnum::GetValueAsString<EPlayerLobbyState>(NewLobbyState));
+	// Invoke event on server side
+	if (GetNetMode() != NM_Client)
+	{
+		// Broadcast the event
+		OnPlayerLobbyInfoChanged.Broadcast();
+	}
+}
 
-	NetRequestCount ++;
-	MARK_PROPERTY_DIRTY_FROM_NAME(ADAGPlayerState, NetRequestCount, this);
+void ADAGPlayerState::OnRep_PlayerName()
+{
+	Super::OnRep_PlayerName();
 
+	// Notify the info changes
+	OnPlayerLobbyInfoChanged.Broadcast();
+}
+
+void ADAGPlayerState::OnRep_LobbyState()
+{
 	// Broadcast the event
 	OnPlayerLobbyInfoChanged.Broadcast();
-}
-
-void ADAGPlayerState::SetPlayerName(const FString& S)
-{
-	Super::SetPlayerName(S);
-
-	// Broadcast rename event
-	OnPlayerLobbyInfoChanged.Broadcast();
-}
-
-void ADAGPlayerState::OnRep_LobbyState(EPlayerLobbyState NewState)
-{
-	UE_LOG(LogInit, Log, TEXT("OnRep_LobbyState to %s"), *UEnum::GetValueAsString<EPlayerLobbyState>(NewState));
-}
-
-void ADAGPlayerState::OnRep_NetRequestCount(int32 NewCount)
-{
-	UE_LOG(LogInit, Log, TEXT("OnRep_NetRequestCount: %d"), NewCount);
 }

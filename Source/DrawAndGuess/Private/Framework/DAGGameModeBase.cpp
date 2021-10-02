@@ -23,12 +23,6 @@ void ADAGGameModeBase::PostLogin(APlayerController* NewPlayer)
 
 		// Upload player info
 		PlayerController->ClientUploadPlayerInfo();
-
-		// Register the callback for lobby state changes
-		if (ADAGPlayerState* PlayerState = PlayerController->GetPlayerState<ADAGPlayerState>())
-		{
-			PlayerState->OnPlayerLobbyInfoChanged.AddDynamic(this, &ADAGGameModeBase::OnAnyPlayerLobbyInfoChanged);
-		}
 	}
 }
 
@@ -38,12 +32,6 @@ void ADAGGameModeBase::Logout(AController* Exiting)
 	if (ADAGPlayerController* PlayerController = Cast<ADAGPlayerController>(Exiting))
 	{
 		PlayerControllerList.Remove(PlayerController);
-
-		// Unregister the lobby state callback
-		if (ADAGPlayerState* PlayerState = PlayerController->GetPlayerState<ADAGPlayerState>())
-		{
-			PlayerState->OnPlayerLobbyInfoChanged.RemoveDynamic(this, &ADAGGameModeBase::OnAnyPlayerLobbyInfoChanged);
-		}
 	}
 
 	Super::Logout(Exiting);
@@ -79,19 +67,4 @@ void ADAGGameModeBase::NotifyClientGameWillStart()
 	{
 		PlayerController->ClientPreStartGame();
 	}
-}
-
-void ADAGGameModeBase::NotifyClientRefreshLobbyInfo()
-{
-	// Tell everyone refresh the lobby info
-	for (ADAGPlayerController* PlayerController : PlayerControllerList)
-	{
-		PlayerController->ClientRefreshLobbyInfo();
-	}
-}
-
-void ADAGGameModeBase::OnAnyPlayerLobbyInfoChanged()
-{
-	// Notify all players to get latest lobby state once someone changed state
-	NotifyClientRefreshLobbyInfo();
 }

@@ -16,6 +16,7 @@ namespace EReturnToMainMenuReason
 UENUM(BlueprintType)
 enum class EPlayerLobbyState : uint8
 {
-	PLS_Waiting,
-	PLS_Ready,
+	PLS_Waiting			UMETA(DisplayName="Waiting"),
+	PLS_Ready			UMETA(DisplayName="Ready"),
+	PLS_Host			UMETA(DisplayName="Host"),
 };

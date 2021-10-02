@@ -17,6 +17,7 @@ class DRAWANDGUESS_API ADAGPlayerState : public APlayerState
 
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPlayerLobbyInfoChangedSignature);
+	UPROPERTY(BlueprintAssignable, Category="PlayerState")
 	FPlayerLobbyInfoChangedSignature OnPlayerLobbyInfoChanged;
 
 	UFUNCTION(Server, Reliable)
@@ -25,17 +26,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category="PlayerState")
 	EPlayerLobbyState GetLobbyState() const { return LobbyState; }
 
-	virtual void SetPlayerName(const FString& S) override;
+	virtual void OnRep_PlayerName() override;
 
 	UFUNCTION()
-	void OnRep_LobbyState(EPlayerLobbyState NewState);
-
-	UFUNCTION()
-	void OnRep_NetRequestCount(int32 NewCount);
+	void OnRep_LobbyState();
 protected:
 	UPROPERTY(ReplicatedUsing="OnRep_LobbyState")
 	EPlayerLobbyState LobbyState;
-
-	UPROPERTY(ReplicatedUsing=OnRep_NetRequestCount)
-	int32 NetRequestCount;
 };
