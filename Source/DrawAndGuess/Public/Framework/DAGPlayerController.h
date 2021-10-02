@@ -26,6 +26,9 @@ public:
 	void HandleReturnToMainMenu();
 
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category="PlayerController")
+	void ServerSetPlayerName(const FString& PlayerName);
+
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category="PlayerController")
 	void ServerSetLobbyState(EPlayerLobbyState NewState);
 
 protected:

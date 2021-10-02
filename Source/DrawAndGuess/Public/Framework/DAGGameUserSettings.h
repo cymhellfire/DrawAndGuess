@@ -21,7 +21,14 @@ public:
 
 	float GetPencilInterpolateThreshold() const;
 
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
+	void SetPlayerName(FString NewName);
+
+	UFUNCTION(BlueprintCallable, Category="GameUserSetttings")
 	FString GetPlayerName() const;
+
+	UFUNCTION(BlueprintCallable, Category="GameInstance")
+	static UDAGGameUserSettings* GetDAGGameUserSettings();
 
 protected:
 	UPROPERTY(config)

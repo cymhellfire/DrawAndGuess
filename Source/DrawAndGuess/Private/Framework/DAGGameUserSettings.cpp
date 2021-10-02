@@ -23,7 +23,22 @@ float UDAGGameUserSettings::GetPencilInterpolateThreshold() const
 	return PencilInterpolationThreshold;
 }
 
+void UDAGGameUserSettings::SetPlayerName(FString NewName)
+{
+	PlayerName = NewName;
+}
+
 FString UDAGGameUserSettings::GetPlayerName() const
 {
 	return PlayerName;
+}
+
+UDAGGameUserSettings* UDAGGameUserSettings::GetDAGGameUserSettings()
+{
+	if (GEngine)
+	{
+		return Cast<UDAGGameUserSettings>(GEngine->GetGameUserSettings());
+	}
+
+	return nullptr;
 }

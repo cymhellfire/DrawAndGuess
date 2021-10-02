@@ -74,6 +74,14 @@ void ADAGPlayerController::HandleReturnToMainMenu()
 	CleanupSessionOnReturnMain();
 }
 
+void ADAGPlayerController::ServerSetPlayerName_Implementation(const FString& PlayerName)
+{
+	if (ADAGPlayerState* MyPlayerState = GetPlayerState<ADAGPlayerState>())
+	{
+		MyPlayerState->SetPlayerName(PlayerName);
+	}
+}
+
 void ADAGPlayerController::ServerSetLobbyState_Implementation(EPlayerLobbyState NewState)
 {
 	if (ADAGPlayerState* MyPlayerState = GetPlayerState<ADAGPlayerState>())
