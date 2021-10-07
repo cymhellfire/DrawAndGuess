@@ -7,10 +7,12 @@
 class UDrawingActionBase;
 
 UCLASS()
-class DRAWANDGUESS_API UDrawingActionManager : public ULocalPlayerSubsystem
+class DRAWANDGUESS_API ADrawingActionManager : public AActor
 {
 	GENERATED_BODY()
 public:
+	ADrawingActionManager();
+
 	/**
 	 * Create a drawing action with given type.
 	 *
@@ -31,7 +33,21 @@ public:
 	 */
 	void Undo();
 
+	void SetLocalFlag(bool NewValue) { bIsLocal = NewValue; }
+
+	bool GetLocalFlag() const { return bIsLocal; }
+
 protected:
-	UPROPERTY(Transient)
+	UFUNCTION()
+	void OnRep_ActionCount();
+
+protected:
+	UPROPERTY(ReplicatedUsing=OnRep_ActionCount)
+	int32 ActionCount;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsLocal;
+
+	UPROPERTY(Transient, VisibleAnywhere)
 	TArray<UDrawingActionBase*> DrawingActionStack;
 };

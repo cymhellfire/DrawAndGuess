@@ -1,8 +1,10 @@
 #include "Framework/DAGGameModeBase.h"
 
+#include "DrawingSystem/DrawingActionManager.h"
 #include "Framework/DAGGameStateBase.h"
 #include "Framework/DAGPlayerController.h"
 #include "Framework/DAGPlayerState.h"
+#include "Pawns/DrawingBrush.h"
 
 ADAGGameModeBase::ADAGGameModeBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -21,6 +23,20 @@ void ADAGGameModeBase::PostLogin(APlayerController* NewPlayer)
 	{
 		PlayerControllerList.Add(PlayerController);
 
+		// Spawn drawing action manager for new player
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = PlayerController;
+		ADrawingActionManager* NewDrawingActionManager = GetWorld()->SpawnActor<ADrawingActionManager>(SpawnParams);
+		if (IsValid(NewDrawingActionManager))
+		{
+			PlayerController->SetDrawingActionManager(NewDrawingActionManager);
+			PlayerController->SetDrawingActionManagerToBrush();
+		}
+		else
+		{
+			UE_LOG(LogInit, Error, TEXT("[GameMode] Failed spawn drawing action manager for new player %s."), *NewPlayer->GetName());
+		}
+
 		// Upload player info
 		PlayerController->ClientUploadPlayerInfo();
 	}
@@ -32,6 +48,13 @@ void ADAGGameModeBase::Logout(AController* Exiting)
 	if (ADAGPlayerController* PlayerController = Cast<ADAGPlayerController>(Exiting))
 	{
 		PlayerControllerList.Remove(PlayerController);
+
+		// Destroy the corresponding drawing action manager instance
+		ADrawingActionManager* DrawingActionManager = PlayerController->GetDrawingActionManager();
+		if (IsValid(DrawingActionManager))
+		{
+			DrawingActionManager->Destroy();
+		}
 	}
 
 	Super::Logout(Exiting);

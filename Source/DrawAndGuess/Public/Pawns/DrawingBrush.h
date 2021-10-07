@@ -9,7 +9,7 @@
 
 class UDrawingActionBase;
 class ADrawingCanvas;
-class UDrawingActionManager;
+class ADrawingActionManager;
 
 UCLASS()
 class DRAWANDGUESS_API ADrawingBrush : public APawn
@@ -25,6 +25,22 @@ protected:
 	virtual void BeginPlay() override;
 
 	/**
+	 * Broadcast an array of input events through server.
+	 *
+	 * @param InputEvents			Input events to synchronize
+	 */
+	UFUNCTION(Server, Reliable)
+	void ServerBroadcastInputEvents(const TArray<FDrawingInputEvent>& InputEvents);
+
+	/**
+	 * Send a series of input events to all connected clients.
+	 *
+	 * @param InputEvents			Input events to send.
+	 */
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastReceiveInputEvents(const TArray<FDrawingInputEvent>& InputEvents);
+
+	/**
 	 * Get the drawing point location in given canvas.
 	 * Or get the drawing point location and drawing canvas.
 	 *
@@ -37,7 +53,7 @@ protected:
 
 	void HandleDrawingInputEvent(FDrawingInputEvent InputEvent);
 
-	UDrawingActionManager* GetDrawingActionManager() const;
+	ADrawingActionManager* GetDrawingActionManager();
 
 	void OnDrawButtonPressed();
 	void OnDrawButtonReleased();
@@ -45,6 +61,9 @@ protected:
 	void OnUndoPressed();
 
 	void OnCursorAxisChanged(float Input);
+
+	UFUNCTION()
+	void OnRep_DrawingActionManager();
 
 public:
 	virtual void PossessedBy(AController* NewController) override;
@@ -71,6 +90,9 @@ public:
 
 	FLinearColor GetBrushColor() const { return BrushColor; }
 
+	UFUNCTION(Server, Reliable)
+	void ServerSetDrawingActionManager(ADrawingActionManager* NewDrawingActionManager);
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DrawingBrush")
 	UMaterial* BrushMaterial;
@@ -87,11 +109,25 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DrawingBrush")
 	TEnumAsByte<EDrawingActionType> DrawingActionType;
 
+	UPROPERTY(VisibleAnywhere, Transient)
+	bool bLocal;
+
+	UPROPERTY(ReplicatedUsing=OnRep_DrawingActionManager, Transient, VisibleAnywhere)
+	ADrawingActionManager* MyDrawingActionManager;
+
 	UPROPERTY(Transient)
 	UMaterialInstanceDynamic* BrushMaterialInstance;
 
 	uint8 bDrawPressed : 1;
 
+	ENetRole CachedRole;
+
+	UPROPERTY()
 	UDrawingActionBase* CurrentDrawAction;
+
+	// Local input queue
 	TArray<FDrawingInputEvent> InputEventQueue;
+
+	// Received input queue from server
+	TArray<FDrawingInputEvent> ReceivedInputEventQueue;
 };

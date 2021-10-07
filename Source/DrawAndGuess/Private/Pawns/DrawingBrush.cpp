@@ -8,9 +8,13 @@
 #include "Actors/DrawingCanvas.h"
 #include "DrawingSystem/DrawingActionManager.h"
 #include "DrawingSystem/DrawingActionBase.h"
+#include "Engine/ActorChannel.h"
 #include "Engine/Canvas.h"
+#include "Framework/DAGPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetRenderingLibrary.h"
+#include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 // Sets default values
 ADrawingBrush::ADrawingBrush()
@@ -19,6 +23,10 @@ ADrawingBrush::ADrawingBrush()
 	PrimaryActorTick.bCanEverTick = true;
 
 	BrushSize = 100;
+	bDrawPressed = false;
+
+	bReplicates = true;
+	CachedRole = ROLE_MAX;
 }
 
 // Called when the game starts or when spawned
@@ -37,6 +45,22 @@ void ADrawingBrush::BeginPlay()
 		}
 
 		BrushMaterialInstance->SetTextureParameterValue(TEXT("BrushTexture"), BrushTexture);
+	}
+}
+
+void ADrawingBrush::ServerBroadcastInputEvents_Implementation(const TArray<FDrawingInputEvent>& InputEvents)
+{
+	// Broadcast all input events to all clients
+	MulticastReceiveInputEvents(InputEvents);
+}
+
+void ADrawingBrush::MulticastReceiveInputEvents_Implementation(const TArray<FDrawingInputEvent>& InputEvents)
+{
+	//if ((GetNetMode() == NM_Client && GetLocalRole() != ROLE_AutonomousProxy))
+	if (!bLocal)
+	{
+		// Append input event into received queue
+		ReceivedInputEventQueue.Append(InputEvents);
 	}
 }
 
@@ -85,11 +109,23 @@ void ADrawingBrush::HandleDrawingInputEvent(FDrawingInputEvent InputEvent)
 {
 	switch (InputEvent.InputType)
 	{
+	case DIE_CreateAction:
+		// Create the action
+		if (ADrawingActionManager* DrawingActionManager = GetDrawingActionManager())
+		{
+			// Create a local drawing action to draw with
+			CurrentDrawAction = DrawingActionManager->CreateDrawingAction(DrawingActionType);
+			CurrentDrawAction->CopyBrushSettings(this);
+		}
+		break;
 	case DIE_Pressed:
-		// Setup the parent canvas
-		CurrentDrawAction->SetParentCanvas(InputEvent.Canvas);
-		// Pass in input location to action
-		CurrentDrawAction->AddInputPoint(InputEvent.InputLocation);
+		if (CurrentDrawAction != nullptr)
+		{
+			// Setup the parent canvas
+			CurrentDrawAction->SetParentCanvas(InputEvent.Canvas);
+			// Pass in input location to action
+			CurrentDrawAction->AddInputPoint(InputEvent.InputLocation);
+		}
 		break;
 	case DIE_Released:
 		if (CurrentDrawAction != nullptr)
@@ -97,7 +133,7 @@ void ADrawingBrush::HandleDrawingInputEvent(FDrawingInputEvent InputEvent)
 			CurrentDrawAction->StopInput(InputEvent.InputLocation);
 
 			// Submit current action
-			if (UDrawingActionManager* DrawingActionManager = GetDrawingActionManager())
+			if (ADrawingActionManager* DrawingActionManager = GetDrawingActionManager())
 			{
 				DrawingActionManager->SubmitDrawingAction(CurrentDrawAction);
 			}
@@ -122,26 +158,25 @@ void ADrawingBrush::HandleDrawingInputEvent(FDrawingInputEvent InputEvent)
 	}
 }
 
-UDrawingActionManager* ADrawingBrush::GetDrawingActionManager() const
+ADrawingActionManager* ADrawingBrush::GetDrawingActionManager()
 {
-	if (APlayerController* MyPlayerController = Cast<APlayerController>(GetController()))
+	if (ADAGPlayerController* MyPlayerController = Cast<ADAGPlayerController>(GetController()))
 	{
-		return MyPlayerController->GetLocalPlayer()->GetSubsystem<UDrawingActionManager>();
+		return MyPlayerController->GetDrawingActionManager();
 	}
 
-	return nullptr;
+	return MyDrawingActionManager;
 }
 
 void ADrawingBrush::OnDrawButtonPressed()
 {
 	bDrawPressed = true;
 
-	// Create the action
-	if (UDrawingActionManager* DrawingActionManager = GetDrawingActionManager())
-	{
-		CurrentDrawAction = DrawingActionManager->CreateDrawingAction(DrawingActionType);
-		CurrentDrawAction->CopyBrushSettings(this);
-	}
+	InputEventQueue.Add(FDrawingInputEvent{
+		NullVector,
+		EDrawingInputType::DIE_CreateAction,
+		nullptr,
+	});
 
 	ADrawingCanvas* DrawingCanvas = nullptr;
 	FVector2D DrawingPoint = GetDrawingPoint(DrawingCanvas);
@@ -159,7 +194,7 @@ void ADrawingBrush::OnDrawButtonReleased()
 {
 	bDrawPressed = false;
 
-	ADrawingCanvas* DrawingCanvas = CurrentDrawAction->GetParentCanvas();
+	ADrawingCanvas* DrawingCanvas = CurrentDrawAction ? CurrentDrawAction->GetParentCanvas() : nullptr;
 	FVector2D DrawingPoint = GetDrawingPoint(DrawingCanvas);
 	// if (DrawingPoint != NullVector)
 	// {
@@ -175,7 +210,7 @@ void ADrawingBrush::OnUndoPressed()
 {
 	if (APlayerController* MyPlayerController = Cast<APlayerController>(GetController()))
 	{
-		if (UDrawingActionManager* DrawingActionManager = MyPlayerController->GetLocalPlayer()->GetSubsystem<UDrawingActionManager>())
+		if (ADrawingActionManager* DrawingActionManager = GetDrawingActionManager())
 		{
 			DrawingActionManager->Undo();
 		}
@@ -186,7 +221,7 @@ void ADrawingBrush::OnCursorAxisChanged(float Input)
 {
 	if (FMath::Abs(Input) > 0.01f && bDrawPressed)
 	{
-		ADrawingCanvas* DrawingCanvas = CurrentDrawAction->GetParentCanvas();
+		ADrawingCanvas* DrawingCanvas = CurrentDrawAction ? CurrentDrawAction->GetParentCanvas() : nullptr;
 		FVector2D DrawingPoint = GetDrawingPoint(DrawingCanvas);
 		if (DrawingPoint != NullVector)
 		{
@@ -197,6 +232,18 @@ void ADrawingBrush::OnCursorAxisChanged(float Input)
 			});
 		}
 	}
+}
+
+void ADrawingBrush::OnRep_DrawingActionManager()
+{
+	UE_LOG(LogInit, Log, TEXT("OnRep_DrawingActionManager: %d %s"), GetNetMode(), *GetName());
+}
+
+void ADrawingBrush::ServerSetDrawingActionManager_Implementation(ADrawingActionManager* NewDrawingActionManager)
+{
+	MyDrawingActionManager = NewDrawingActionManager;
+
+	MARK_PROPERTY_DIRTY_FROM_NAME(ADrawingBrush, MyDrawingActionManager, this);
 }
 
 void ADrawingBrush::PossessedBy(AController* NewController)
@@ -226,7 +273,20 @@ void ADrawingBrush::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// Process all pending input events
+	if (CachedRole != GetLocalRole())
+	{
+		CachedRole = GetLocalRole();
+
+		UE_LOG(LogInit, Log, TEXT("[%s] Change local role to %s"), *GetPathName(), *UEnum::GetValueAsString<ENetRole>(CachedRole));
+	}
+
+	// Upload local input event queue
+	if (GetLocalRole() > ROLE_SimulatedProxy && InputEventQueue.Num() > 0)
+	{
+		ServerBroadcastInputEvents(InputEventQueue);
+	}
+
+	// Process all pending input events locally
 	if (InputEventQueue.Num() > 0)
 	{
 		for (FDrawingInputEvent InputEvent : InputEventQueue)
@@ -236,6 +296,19 @@ void ADrawingBrush::Tick(float DeltaTime)
 
 		// Clear the queue
 		InputEventQueue.Empty();
+	}
+
+	// Process all received input events
+	if (!bLocal && ReceivedInputEventQueue.Num() > 0)
+	{
+		for (FDrawingInputEvent InputEvent : ReceivedInputEventQueue)
+		{
+			UE_LOG(LogInit, Log, TEXT("[Brush] Process received input: %d %s"), GetNetMode(), *GetName());
+			HandleDrawingInputEvent(InputEvent);
+		}
+
+		// Clear the queue
+		ReceivedInputEventQueue.Empty();
 	}
 }
 
@@ -250,6 +323,8 @@ void ADrawingBrush::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 	PlayerInputComponent->BindAxis(TEXT("CursorX"), this, &ADrawingBrush::OnCursorAxisChanged);
 	PlayerInputComponent->BindAxis(TEXT("CursorY"), this, &ADrawingBrush::OnCursorAxisChanged);
+
+	bLocal = true;
 }
 
 void ADrawingBrush::SetBrushTexture(UTexture2D* NewTexture)
@@ -270,3 +345,12 @@ void ADrawingBrush::SetBrushColor(FLinearColor NewColor)
 	BrushMaterialInstance->SetVectorParameterValue(TEXT("BrushColor"), BrushColor);
 }
 
+void ADrawingBrush::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	FDoRepLifetimeParams SharedParam;
+	SharedParam.bIsPushBased = true;
+
+	DOREPLIFETIME_WITH_PARAMS(ADrawingBrush, MyDrawingActionManager, SharedParam);
+}

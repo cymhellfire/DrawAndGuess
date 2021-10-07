@@ -1,11 +1,19 @@
 #include "Framework/DAGPlayerController.h"
 
 #include "Localization.h"
+#include "DrawingSystem/DrawingActionManager.h"
 #include "Framework/DAGGameInstance.h"
 #include "Framework/DAGGameUserSettings.h"
 #include "Framework/DAGPlayerState.h"
 #include "GameFramework/PlayerState.h"
+#include "Pawns/DrawingBrush.h"
 
+void ADAGPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(ADAGPlayerController, DrawingActionManager, COND_OwnerOnly);
+}
 
 void ADAGPlayerController::ClientPreStartGame_Implementation()
 {
@@ -90,6 +98,38 @@ void ADAGPlayerController::ServerSetLobbyState_Implementation(EPlayerLobbyState 
 	}
 }
 
+void ADAGPlayerController::SetDrawingActionManager(ADrawingActionManager* NewDrawingActonManager)
+{
+	if (NewDrawingActonManager != DrawingActionManager)
+	{
+		DrawingActionManager = NewDrawingActonManager;
+	}
+}
+
+void ADAGPlayerController::SetDrawingActionManagerToBrush()
+{
+	// Set drawing action manager if matches
+	if (ADrawingBrush* DrawingBrush = Cast<ADrawingBrush>(GetPawn()))
+	{
+		ADrawingActionManager* MyDrawingActionManager = GetDrawingActionManager();
+		if (MyDrawingActionManager != nullptr)
+		{
+			DrawingBrush->ServerSetDrawingActionManager(MyDrawingActionManager);
+		}
+		else
+		{
+			UE_LOG(LogInit, Error, TEXT("[PlayerController] No valid drawing action manager %s"), *GetName());
+		}
+	}
+}
+
+void ADAGPlayerController::OnPossess(APawn* PawnToPossess)
+{
+	Super::OnPossess(PawnToPossess);
+
+	SetDrawingActionManagerToBrush();
+}
+
 void ADAGPlayerController::CleanupSessionOnReturnMain()
 {
 	const UWorld* World = GetWorld();
@@ -99,4 +139,10 @@ void ADAGPlayerController::CleanupSessionOnReturnMain()
 		// Let game instance handle the session stuff
 		GameInstance->CleanupSessionOnReturnToMenu();
 	}
+}
+
+void ADAGPlayerController::OnRep_DrawingActionManager()
+{
+	// Mark owning action manager as local one
+	DrawingActionManager->SetLocalFlag(true);
 }

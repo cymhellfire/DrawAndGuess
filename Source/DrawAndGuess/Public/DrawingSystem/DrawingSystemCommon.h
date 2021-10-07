@@ -16,6 +16,7 @@ enum EDrawingActionType
 UENUM(BlueprintType)
 enum EDrawingInputType
 {
+	DIE_CreateAction,
 	DIE_Pressed,
 	DIE_Released,
 	DIE_Dragged,
@@ -36,10 +37,18 @@ struct DRAWANDGUESS_API FDrawingBrushSettings
 	FLinearColor BrushColor;
 };
 
+USTRUCT()
 struct FDrawingInputEvent
 {
+	GENERATED_BODY();
+
+	UPROPERTY()
 	FVector2D InputLocation;
-	EDrawingInputType InputType;
+
+	UPROPERTY()
+	TEnumAsByte<EDrawingInputType> InputType;
+
+	UPROPERTY()
 	ADrawingCanvas* Canvas;
 };
 

@@ -4,6 +4,8 @@
 #include "DrawAndGuessType.h"
 #include "DAGPlayerController.generated.h"
 
+class ADrawingActionManager;
+
 UCLASS()
 class ADAGPlayerController : public APlayerController
 {
@@ -31,7 +33,22 @@ public:
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category="PlayerController")
 	void ServerSetLobbyState(EPlayerLobbyState NewState);
 
+	void SetDrawingActionManager(ADrawingActionManager* NewDrawingActionManager);
+
+	ADrawingActionManager* GetDrawingActionManager() const { return DrawingActionManager; }
+
+	void SetDrawingActionManagerToBrush();
+
 protected:
+	virtual void OnPossess(APawn* PawnToPossess) override;
 
 	void CleanupSessionOnReturnMain();
+
+	UFUNCTION()
+	void OnRep_DrawingActionManager();
+
+protected:
+
+	UPROPERTY(ReplicatedUsing=OnRep_DrawingActionManager, VisibleAnywhere)
+	ADrawingActionManager* DrawingActionManager;
 };
