@@ -65,6 +65,12 @@ protected:
 	UFUNCTION()
 	void OnRep_DrawingActionManager();
 
+	UFUNCTION()
+	void OnRep_BrushColor();
+
+	UFUNCTION()
+	void OnRep_BrushTexture();
+
 public:
 	virtual void PossessedBy(AController* NewController) override;
 
@@ -77,21 +83,30 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable, Category="DrawingBrush")
-	void SetBrushSize(float NewSize) { BrushSize = NewSize; }
+	void SetBrushSize(float NewSize);
 
-	float GetBrushSize() const { return BrushSize; }
+	float GetBrushSize() const { return bLocal ? BrushSize : SyncBrushSize; }
 
 	void SetBrushTexture(UTexture2D* NewTexture);
 
-	UTexture2D* GetBrushTexture() const { return BrushTexture; }
+	UTexture2D* GetBrushTexture() const { return bLocal ? BrushTexture : SyncBrushTexture; }
 
 	UFUNCTION(BlueprintCallable, Category="DrawingBrush")
 	void SetBrushColor(FLinearColor NewColor);
 
-	FLinearColor GetBrushColor() const { return BrushColor; }
+	FLinearColor GetBrushColor() const { return bLocal ? BrushColor : SyncBrushColor; }
 
 	UFUNCTION(Server, Reliable)
 	void ServerSetDrawingActionManager(ADrawingActionManager* NewDrawingActionManager);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetBrushSize(float NewSize);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetBrushTexture(UTexture2D* NewTexture);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetBrushColor(FLinearColor NewColor);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DrawingBrush")
@@ -100,11 +115,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DrawingBrush")
 	UTexture2D* BrushTexture;
 
+	UPROPERTY(ReplicatedUsing=OnRep_BrushTexture, Transient, VisibleAnywhere)
+	UTexture2D* SyncBrushTexture;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DrawingBrush")
 	float BrushSize;
 
+	UPROPERTY(Replicated, Transient, VisibleAnywhere)
+	float SyncBrushSize;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DrawingBrush")
 	FLinearColor BrushColor;
+
+	UPROPERTY(ReplicatedUsing=OnRep_BrushColor, Transient, VisibleAnywhere)
+	FLinearColor SyncBrushColor;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DrawingBrush")
 	TEnumAsByte<EDrawingActionType> DrawingActionType;

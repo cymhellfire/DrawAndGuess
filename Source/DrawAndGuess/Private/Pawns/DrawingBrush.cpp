@@ -22,7 +22,7 @@ ADrawingBrush::ADrawingBrush()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	BrushSize = 100;
+	BrushSize = 50;
 	bDrawPressed = false;
 
 	bReplicates = true;
@@ -44,7 +44,8 @@ void ADrawingBrush::BeginPlay()
 			BrushMaterialInstance->SetFlags(RF_Transient);
 		}
 
-		BrushMaterialInstance->SetTextureParameterValue(TEXT("BrushTexture"), BrushTexture);
+		BrushMaterialInstance->SetTextureParameterValue(TEXT("BrushTexture"), GetBrushTexture());
+		BrushMaterialInstance->SetVectorParameterValue(TEXT("BrushColor"), GetBrushColor());
 	}
 }
 
@@ -56,7 +57,6 @@ void ADrawingBrush::ServerBroadcastInputEvents_Implementation(const TArray<FDraw
 
 void ADrawingBrush::MulticastReceiveInputEvents_Implementation(const TArray<FDrawingInputEvent>& InputEvents)
 {
-	//if ((GetNetMode() == NM_Client && GetLocalRole() != ROLE_AutonomousProxy))
 	if (!bLocal)
 	{
 		// Append input event into received queue
@@ -276,8 +276,6 @@ void ADrawingBrush::Tick(float DeltaTime)
 	if (CachedRole != GetLocalRole())
 	{
 		CachedRole = GetLocalRole();
-
-		UE_LOG(LogInit, Log, TEXT("[%s] Change local role to %s"), *GetPathName(), *UEnum::GetValueAsString<ENetRole>(CachedRole));
 	}
 
 	// Upload local input event queue
@@ -303,7 +301,6 @@ void ADrawingBrush::Tick(float DeltaTime)
 	{
 		for (FDrawingInputEvent InputEvent : ReceivedInputEventQueue)
 		{
-			UE_LOG(LogInit, Log, TEXT("[Brush] Process received input: %d %s"), GetNetMode(), *GetName());
 			HandleDrawingInputEvent(InputEvent);
 		}
 
@@ -325,6 +322,29 @@ void ADrawingBrush::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAxis(TEXT("CursorY"), this, &ADrawingBrush::OnCursorAxisChanged);
 
 	bLocal = true;
+
+	ServerSetBrushSize(BrushSize);
+	ServerSetBrushColor(BrushColor);
+	ServerSetBrushTexture(BrushTexture);
+}
+
+void ADrawingBrush::SetBrushSize(float NewSize)
+{
+	if (BrushSize == NewSize)
+		return;
+
+	if (bLocal)
+	{
+		BrushSize = NewSize;
+		ServerSetBrushSize(NewSize);
+	}
+}
+
+void ADrawingBrush::ServerSetBrushSize_Implementation(float NewSize)
+{
+	SyncBrushSize = NewSize;
+
+	MARK_PROPERTY_DIRTY_FROM_NAME(ADrawingBrush, SyncBrushSize, this);
 }
 
 void ADrawingBrush::SetBrushTexture(UTexture2D* NewTexture)
@@ -332,8 +352,16 @@ void ADrawingBrush::SetBrushTexture(UTexture2D* NewTexture)
 	if (BrushTexture == NewTexture)
 		return;
 
-	BrushTexture = NewTexture;
-	BrushMaterialInstance->SetTextureParameterValue(TEXT("BrushTexture"), BrushTexture);
+	if (bLocal)
+	{
+		BrushTexture = NewTexture;
+		if (IsValid(BrushMaterialInstance))
+		{
+			BrushMaterialInstance->SetTextureParameterValue(TEXT("BrushTexture"), BrushTexture);
+		}
+
+		ServerSetBrushTexture(NewTexture);
+	}
 }
 
 void ADrawingBrush::SetBrushColor(FLinearColor NewColor)
@@ -341,8 +369,54 @@ void ADrawingBrush::SetBrushColor(FLinearColor NewColor)
 	if (BrushColor == NewColor)
 		return;
 
-	BrushColor = NewColor;
-	BrushMaterialInstance->SetVectorParameterValue(TEXT("BrushColor"), BrushColor);
+	if (bLocal)
+	{
+		BrushColor = NewColor;
+		if (IsValid(BrushMaterialInstance))
+		{
+			BrushMaterialInstance->SetVectorParameterValue(TEXT("BrushColor"), BrushColor);
+		}
+
+		ServerSetBrushColor(NewColor);
+	}
+}
+
+void ADrawingBrush::ServerSetBrushTexture_Implementation(UTexture2D* NewTexture)
+{
+	SyncBrushTexture = NewTexture;
+
+	MARK_PROPERTY_DIRTY_FROM_NAME(ADrawingBrush, SyncBrushTexture, this);
+}
+
+void ADrawingBrush::OnRep_BrushTexture()
+{
+	if (!bLocal)
+	{
+		UE_LOG(LogInit, Log, TEXT("OnRep_BrushTexture %s"), *GetPathName());
+		if (IsValid(BrushMaterialInstance))
+		{
+			BrushMaterialInstance->SetTextureParameterValue(TEXT("BrushTexture"), SyncBrushTexture);
+		}
+	}
+}
+
+void ADrawingBrush::ServerSetBrushColor_Implementation(FLinearColor NewColor)
+{
+	SyncBrushColor = NewColor;
+
+	MARK_PROPERTY_DIRTY_FROM_NAME(ADrawingBrush, SyncBrushColor, this);
+}
+
+void ADrawingBrush::OnRep_BrushColor()
+{
+	if (!bLocal)
+	{
+		UE_LOG(LogInit, Log, TEXT("OnRep_BrushColor %s"), *GetPathName());
+		if (IsValid(BrushMaterialInstance))
+		{
+			BrushMaterialInstance->SetVectorParameterValue(TEXT("BrushColor"), BrushColor);
+		}
+	}
 }
 
 void ADrawingBrush::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -353,4 +427,7 @@ void ADrawingBrush::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	SharedParam.bIsPushBased = true;
 
 	DOREPLIFETIME_WITH_PARAMS(ADrawingBrush, MyDrawingActionManager, SharedParam);
+	DOREPLIFETIME_WITH_PARAMS(ADrawingBrush, SyncBrushColor, SharedParam);
+	DOREPLIFETIME_WITH_PARAMS(ADrawingBrush, SyncBrushSize, SharedParam);
+	DOREPLIFETIME_WITH_PARAMS(ADrawingBrush, SyncBrushTexture, SharedParam);
 }
