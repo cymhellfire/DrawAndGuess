@@ -76,6 +76,8 @@ public:
 
 	virtual void UnPossessed() override;
 
+	virtual void OnRep_Controller() override;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

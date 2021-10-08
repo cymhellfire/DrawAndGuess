@@ -268,6 +268,16 @@ void ADrawingBrush::UnPossessed()
 	Super::UnPossessed();
 }
 
+void ADrawingBrush::OnRep_Controller()
+{
+	Super::OnRep_Controller();
+
+	if (APlayerController* CurrentController = Cast<APlayerController>(GetController()))
+	{
+		CurrentController->SetShowMouseCursor(true);
+	}
+}
+
 // Called every frame
 void ADrawingBrush::Tick(float DeltaTime)
 {
