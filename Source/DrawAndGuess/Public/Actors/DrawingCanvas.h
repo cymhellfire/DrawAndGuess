@@ -110,5 +110,6 @@ protected:
 	UPROPERTY(Transient)
 	UTextureRenderTarget2D* CanvasPreviewRenderTarget;
 
+	UPROPERTY(Transient)
 	TArray<UDrawingActionBase*> DrawingActionStack;
 };
