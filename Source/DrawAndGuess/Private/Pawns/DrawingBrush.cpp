@@ -114,7 +114,7 @@ void ADrawingBrush::HandleDrawingInputEvent(FDrawingInputEvent InputEvent)
 		if (ADrawingActionManager* DrawingActionManager = GetDrawingActionManager())
 		{
 			// Create a local drawing action to draw with
-			CurrentDrawAction = DrawingActionManager->CreateDrawingAction(DrawingActionType);
+			CurrentDrawAction = DrawingActionManager->CreateDrawingAction(GetDrawingActionType());
 			CurrentDrawAction->CopyBrushSettings(this);
 		}
 		break;
@@ -385,6 +385,25 @@ void ADrawingBrush::SetBrushColor(FLinearColor NewColor)
 	}
 }
 
+void ADrawingBrush::SetDrawingActionType(EDrawingActionType NewActionType)
+{
+	if (NewActionType == DrawingActionType)
+		return;
+
+	if (bLocal)
+	{
+		DrawingActionType = NewActionType;
+
+		ServerSetDrawingActionType(NewActionType);
+	}
+}
+
+void ADrawingBrush::ServerSetDrawingActionType_Implementation(EDrawingActionType NewActionType)
+{
+	SyncDrawingActionType = NewActionType;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ADrawingBrush, SyncDrawingActionType, this);
+}
+
 void ADrawingBrush::ServerUndo_Implementation()
 {
 	MulticastUndo();
@@ -444,4 +463,5 @@ void ADrawingBrush::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME_WITH_PARAMS(ADrawingBrush, SyncBrushColor, SharedParam);
 	DOREPLIFETIME_WITH_PARAMS(ADrawingBrush, SyncBrushSize, SharedParam);
 	DOREPLIFETIME_WITH_PARAMS(ADrawingBrush, SyncBrushTexture, SharedParam);
+	DOREPLIFETIME_WITH_PARAMS(ADrawingBrush, SyncDrawingActionType, SharedParam);
 }

@@ -98,6 +98,11 @@ public:
 
 	FLinearColor GetBrushColor() const { return bLocal ? BrushColor : SyncBrushColor; }
 
+	UFUNCTION(BlueprintCallable, Category="DrawingBrush")
+	void SetDrawingActionType(EDrawingActionType NewActionType);
+
+	EDrawingActionType GetDrawingActionType() const { return bLocal ? DrawingActionType : SyncDrawingActionType; }
+
 	UFUNCTION(Server, Reliable)
 	void ServerSetDrawingActionManager(ADrawingActionManager* NewDrawingActionManager);
 
@@ -109,6 +114,9 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void ServerSetBrushColor(FLinearColor NewColor);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetDrawingActionType(EDrawingActionType NewActionType);
 
 	UFUNCTION(Server, Reliable)
 	void ServerUndo();
@@ -140,6 +148,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DrawingBrush")
 	TEnumAsByte<EDrawingActionType> DrawingActionType;
+
+	UPROPERTY(Replicated, Transient, VisibleAnywhere)
+	TEnumAsByte<EDrawingActionType> SyncDrawingActionType;
 
 	UPROPERTY(VisibleAnywhere, Transient)
 	bool bLocal;
