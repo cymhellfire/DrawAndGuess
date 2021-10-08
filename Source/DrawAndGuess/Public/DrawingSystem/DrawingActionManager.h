@@ -5,6 +5,7 @@
 #include "DrawingActionManager.generated.h"
 
 class UDrawingActionBase;
+class ADrawingCanvas;
 
 UCLASS()
 class DRAWANDGUESS_API ADrawingActionManager : public AActor
@@ -38,16 +39,10 @@ public:
 	bool GetLocalFlag() const { return bIsLocal; }
 
 protected:
-	UFUNCTION()
-	void OnRep_ActionCount();
-
-protected:
-	UPROPERTY(ReplicatedUsing=OnRep_ActionCount)
-	int32 ActionCount;
-
 	UPROPERTY(VisibleAnywhere)
 	bool bIsLocal;
 
-	UPROPERTY(Transient, VisibleAnywhere)
-	TArray<UDrawingActionBase*> DrawingActionStack;
+	ADrawingCanvas* LastOperatedCanvas;
+
+	TMap<ADrawingCanvas*, TArray<UDrawingActionBase*>> DrawingActionMap;
 };

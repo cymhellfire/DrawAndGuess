@@ -208,13 +208,7 @@ void ADrawingBrush::OnDrawButtonReleased()
 
 void ADrawingBrush::OnUndoPressed()
 {
-	if (APlayerController* MyPlayerController = Cast<APlayerController>(GetController()))
-	{
-		if (ADrawingActionManager* DrawingActionManager = GetDrawingActionManager())
-		{
-			DrawingActionManager->Undo();
-		}
-	}
+	ServerUndo();
 }
 
 void ADrawingBrush::OnCursorAxisChanged(float Input)
@@ -389,6 +383,16 @@ void ADrawingBrush::SetBrushColor(FLinearColor NewColor)
 
 		ServerSetBrushColor(NewColor);
 	}
+}
+
+void ADrawingBrush::ServerUndo_Implementation()
+{
+	MulticastUndo();
+}
+
+void ADrawingBrush::MulticastUndo_Implementation()
+{
+	GetDrawingActionManager()->Undo();
 }
 
 void ADrawingBrush::ServerSetBrushTexture_Implementation(UTexture2D* NewTexture)

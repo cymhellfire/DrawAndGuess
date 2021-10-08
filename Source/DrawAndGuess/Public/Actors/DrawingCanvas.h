@@ -7,6 +7,8 @@
 #include "GameFramework/Actor.h"
 #include "DrawingCanvas.generated.h"
 
+class UDrawingActionBase;
+
 USTRUCT(BlueprintType)
 struct FCanvasSettings
 {
@@ -74,6 +76,15 @@ public:
 	 */
 	void ClearPreview();
 
+	void RegisterDrawingAction(UDrawingActionBase* NewDrawingAction);
+
+	void UnregisterDrawingAction(UDrawingActionBase* ActionToRemove);
+
+	/**
+	 * Clear and redraw this canvas.
+	 */
+	void Refresh();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Canvas")
 	UStaticMeshComponent* CanvasMeshComponent;
@@ -98,4 +109,6 @@ protected:
 
 	UPROPERTY(Transient)
 	UTextureRenderTarget2D* CanvasPreviewRenderTarget;
+
+	TArray<UDrawingActionBase*> DrawingActionStack;
 };

@@ -1,17 +1,17 @@
 ﻿#include "DrawingSystem/DrawingActionManager.h"
-#include "Net/UnrealNetwork.h"
 #include "Actors/DrawingCanvas.h"
 #include "DrawingSystem/DrawingActionBase.h"
 #include "DrawingSystem/DrawingAction_Box.h"
 #include "DrawingSystem/DrawingAction_Line.h"
 #include "DrawingSystem/DrawingAction_Pencil.h"
 #include "Engine/ActorChannel.h"
-#include "Net/Core/PushModel/PushModel.h"
 
 ADrawingActionManager::ADrawingActionManager()
 {
 	bReplicates = true;
 	bAlwaysRelevant = true;
+
+	LastOperatedCanvas = nullptr;
 }
 
 UDrawingActionBase* ADrawingActionManager::CreateDrawingAction(EDrawingActionType ActionType)
@@ -41,10 +41,23 @@ bool ADrawingActionManager::SubmitDrawingAction(UDrawingActionBase* DrawingActio
 	// Only valid action can be accepted
 	if (Result)
 	{
-		DrawingActionStack.AddUnique(DrawingAction);
+		ADrawingCanvas* TargetCanvas = DrawingAction->GetParentCanvas();
+		if (DrawingActionMap.Contains(TargetCanvas))
+		{
+			DrawingActionMap[TargetCanvas].AddUnique(DrawingAction);
+		}
+		else
+		{
+			TArray<UDrawingActionBase*> NewActionStack;
+			NewActionStack.Add(DrawingAction);
+			DrawingActionMap.Add(TargetCanvas, NewActionStack);
+		}
 
-		MARK_PROPERTY_DIRTY_FROM_NAME(ADrawingActionManager, ActionCount, this);
-		ActionCount = DrawingActionStack.Num();
+		// Register new action to target canvas
+		TargetCanvas->RegisterDrawingAction(DrawingAction);
+
+		// Record this canvas
+		LastOperatedCanvas = TargetCanvas;
 	}
 
 	return Result;
@@ -52,46 +65,33 @@ bool ADrawingActionManager::SubmitDrawingAction(UDrawingActionBase* DrawingActio
 
 void ADrawingActionManager::Undo()
 {
-	if (DrawingActionStack.Num() == 0)
+	if (LastOperatedCanvas == nullptr)
+	{
+		UE_LOG(LogInit, Log, TEXT("[DrawingActionManager] No canvas selected."));
+		return;
+	}
+
+	if (!DrawingActionMap.Contains(LastOperatedCanvas))
+	{
+		UE_LOG(LogInit, Log, TEXT("[DrawingActionManager] No drawing record on canvas %s"), *LastOperatedCanvas->GetName());
+		return;
+	}
+
+	TArray<UDrawingActionBase*>* DrawingActionStack = DrawingActionMap.Find(LastOperatedCanvas);
+	if (DrawingActionStack->Num() == 0)
 	{
 		UE_LOG(LogInit, Log, TEXT("[DrawingActionManager] Nothing to undo."));
 		return;
 	}
 
 	// Pop the last action
-	UDrawingActionBase* UndoAction = DrawingActionStack.Pop();
+	UDrawingActionBase* UndoAction = DrawingActionStack->Pop();
 	ADrawingCanvas* UndoCanvas = UndoAction->GetParentCanvas();
 
-	MARK_PROPERTY_DIRTY_FROM_NAME(ADrawingActionManager, ActionCount, this);
-	ActionCount = DrawingActionStack.Num();
-
-	// Clear the parent canvas and prepare for redraw
-	UndoCanvas->Clear();
-
-	// Redraw with left actions
-	for (UDrawingActionBase* DrawingActionBase : DrawingActionStack)
-	{
-		if (DrawingActionBase->HasCanvasToDraw())
-		{
-			DrawingActionBase->ApplyToCanvas();
-		}
-	}
+	// Unregister from parent canvas
+	UndoCanvas->UnregisterDrawingAction(UndoAction);
+	UndoCanvas->Refresh();
 
 	// Destruct undo action
 	UndoAction->ConditionalBeginDestroy();
-}
-
-void ADrawingActionManager::OnRep_ActionCount()
-{
-	UE_LOG(LogInit, Log, TEXT("[Manager] Action Count to %d"), ActionCount);
-}
-
-void ADrawingActionManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	FDoRepLifetimeParams SharedParams;
-	SharedParams.bIsPushBased = true;
-
-	DOREPLIFETIME_WITH_PARAMS(ADrawingActionManager, ActionCount, SharedParams);
 }

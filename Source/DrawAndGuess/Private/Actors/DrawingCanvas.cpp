@@ -3,6 +3,7 @@
 
 #include "Actors/DrawingCanvas.h"
 
+#include "DrawingSystem/DrawingActionBase.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Kismet/KismetRenderingLibrary.h"
 
@@ -95,5 +96,34 @@ void ADrawingCanvas::Clear()
 void ADrawingCanvas::ClearPreview()
 {
 	UKismetRenderingLibrary::ClearRenderTarget2D(this, CanvasPreviewRenderTarget, FLinearColor::Transparent);
+}
+
+void ADrawingCanvas::RegisterDrawingAction(UDrawingActionBase* NewDrawingAction)
+{
+	if (IsValid(NewDrawingAction) && NewDrawingAction->GetParentCanvas() == this)
+	{
+		DrawingActionStack.AddUnique(NewDrawingAction);
+	}
+}
+
+void ADrawingCanvas::UnregisterDrawingAction(UDrawingActionBase* ActionToRemove)
+{
+	if (IsValid(ActionToRemove))
+	{
+		DrawingActionStack.Remove(ActionToRemove);
+	}
+}
+
+void ADrawingCanvas::Refresh()
+{
+	Clear();
+
+	for (UDrawingActionBase* DrawingAction : DrawingActionStack)
+	{
+		if (DrawingAction->HasCanvasToDraw())
+		{
+			DrawingAction->ApplyToCanvas();
+		}
+	}
 }
 

@@ -110,6 +110,12 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerSetBrushColor(FLinearColor NewColor);
 
+	UFUNCTION(Server, Reliable)
+	void ServerUndo();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastUndo();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DrawingBrush")
 	UMaterial* BrushMaterial;
