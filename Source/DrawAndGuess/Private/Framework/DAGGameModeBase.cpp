@@ -91,3 +91,44 @@ void ADAGGameModeBase::NotifyClientGameWillStart()
 		PlayerController->ClientPreStartGame();
 	}
 }
+
+void ADAGGameModeBase::ForbidPlayerDrawOnCanvas(int32 PlayerId, ADrawingCanvas* TargetCanvas)
+{
+	check(TargetCanvas);
+
+	ADAGPlayerController* TargetPlayer = GetPlayerControllerById(PlayerId);
+	if (TargetPlayer)
+	{
+		TargetPlayer->MulticastAddForbiddenCanvas(TargetCanvas);
+	}
+}
+
+void ADAGGameModeBase::AllowPlayerDrawOnCanvas(int32 PlayerId, ADrawingCanvas* TargetCanvas)
+{
+	check(TargetCanvas);
+
+	ADAGPlayerController* TargetPlayer = GetPlayerControllerById(PlayerId);
+	if (TargetPlayer)
+	{
+		TargetPlayer->MulticastRemoveForbiddenCanvas(TargetCanvas);
+	}
+}
+
+ADAGPlayerController* ADAGGameModeBase::GetPlayerControllerById(int32 PlayerId)
+{
+	ADAGPlayerController* Result = nullptr;
+
+	for (ADAGPlayerController* PlayerController : PlayerControllerList)
+	{
+		if (APlayerState* MyPlayerState = PlayerController->GetPlayerState<APlayerState>())
+		{
+			if (MyPlayerState->GetPlayerId() == PlayerId)
+			{
+				Result = PlayerController;
+				break;
+			}
+		}
+	}
+
+	return Result;
+}

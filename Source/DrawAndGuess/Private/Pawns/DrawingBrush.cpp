@@ -8,7 +8,6 @@
 #include "Actors/DrawingCanvas.h"
 #include "DrawingSystem/DrawingActionManager.h"
 #include "DrawingSystem/DrawingActionBase.h"
-#include "Engine/ActorChannel.h"
 #include "Engine/Canvas.h"
 #include "Framework/DAGPlayerController.h"
 #include "Kismet/GameplayStatics.h"
@@ -74,7 +73,7 @@ FVector2D ADrawingBrush::GetDrawingPoint(ADrawingCanvas*& DesiredCanvas)
 		if (PlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, CursorRayHitResult))
 		{
 			ADrawingCanvas* DrawingCanvas = Cast<ADrawingCanvas>(CursorRayHitResult.Actor);
-			if (DrawingCanvas)
+			if (DrawingCanvas && !ForbiddenCanvas.Contains(DrawingCanvas))
 			{
 				FCollisionQueryParams QueryParams {TEXT("DrawBrushTrace"), true, this};
 				QueryParams.bReturnFaceIndex = true;
@@ -330,6 +329,22 @@ void ADrawingBrush::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	ServerSetBrushSize(BrushSize);
 	ServerSetBrushColor(BrushColor);
 	ServerSetBrushTexture(BrushTexture);
+}
+
+void ADrawingBrush::AddForbiddenCanvas(ADrawingCanvas* NewCanvas)
+{
+	if (IsValid(NewCanvas))
+	{
+		ForbiddenCanvas.AddUnique(NewCanvas);
+	}
+}
+
+void ADrawingBrush::RemoveForbiddenCanvas(ADrawingCanvas* TargetCanvas)
+{
+	if (IsValid(TargetCanvas))
+	{
+		ForbiddenCanvas.Remove(TargetCanvas);
+	}
 }
 
 void ADrawingBrush::SetBrushSize(float NewSize)

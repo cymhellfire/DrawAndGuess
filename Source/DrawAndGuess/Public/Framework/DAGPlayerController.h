@@ -5,6 +5,7 @@
 #include "DAGPlayerController.generated.h"
 
 class ADrawingActionManager;
+class ADrawingCanvas;
 
 UCLASS()
 class ADAGPlayerController : public APlayerController
@@ -38,6 +39,18 @@ public:
 	ADrawingActionManager* GetDrawingActionManager() const { return DrawingActionManager; }
 
 	void SetDrawingActionManagerToBrush();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastAddForbiddenCanvas(ADrawingCanvas* NewCanvas);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRemoveForbiddenCanvas(ADrawingCanvas* TargetCanvas);
+
+	UFUNCTION(Exec)
+	void ExecCheckAllPlayerId();
+
+	UFUNCTION(Exec)
+	void ExecSetPlayerDrawOnCanvas(int32 PlayerId, FString CanvasName, bool bCanDraw);
 
 protected:
 	virtual void OnPossess(APawn* PawnToPossess) override;

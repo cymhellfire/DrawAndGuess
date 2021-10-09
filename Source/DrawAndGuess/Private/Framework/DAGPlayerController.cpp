@@ -1,8 +1,10 @@
 #include "Framework/DAGPlayerController.h"
 
 #include "Localization.h"
+#include "Actors/DrawingCanvas.h"
 #include "DrawingSystem/DrawingActionManager.h"
 #include "Framework/DAGGameInstance.h"
+#include "Framework/DAGGameModeBase.h"
 #include "Framework/DAGGameUserSettings.h"
 #include "Framework/DAGPlayerState.h"
 #include "GameFramework/PlayerState.h"
@@ -119,6 +121,57 @@ void ADAGPlayerController::SetDrawingActionManagerToBrush()
 		else
 		{
 			UE_LOG(LogInit, Error, TEXT("[PlayerController] No valid drawing action manager %s"), *GetName());
+		}
+	}
+}
+
+void ADAGPlayerController::MulticastAddForbiddenCanvas_Implementation(ADrawingCanvas* NewCanvas)
+{
+	if (ADrawingBrush* ControllingBrush = Cast<ADrawingBrush>(GetPawn()))
+	{
+		ControllingBrush->AddForbiddenCanvas(NewCanvas);
+	}
+}
+
+void ADAGPlayerController::MulticastRemoveForbiddenCanvas_Implementation(ADrawingCanvas* TargetCanvas)
+{
+	if (ADrawingBrush* ControllingBrush = Cast<ADrawingBrush>(GetPawn()))
+	{
+		ControllingBrush->RemoveForbiddenCanvas(TargetCanvas);
+	}
+}
+
+void ADAGPlayerController::ExecCheckAllPlayerId()
+{
+	if (AGameStateBase* MyGameState = GetWorld()->GetGameState())
+	{
+		for (APlayerState* MyPlayerState : MyGameState->PlayerArray)
+		{
+			UE_LOG(LogInit, Log, TEXT("[CheckPlayerId] PlayerId %d"), MyPlayerState->GetPlayerId());
+		}
+	}
+}
+
+void ADAGPlayerController::ExecSetPlayerDrawOnCanvas(int32 PlayerId, FString CanvasName, bool bCanDraw)
+{
+	ADAGGameModeBase* MyGameMode = Cast<ADAGGameModeBase>(GetWorld()->GetAuthGameMode());
+	if (IsValid(MyGameMode))
+	{
+		for (TActorIterator<ADrawingCanvas> Iter(GetWorld()); Iter; ++Iter)
+		{
+			ADrawingCanvas* TargetCanvas = *Iter;
+			if (TargetCanvas->GetName() == CanvasName)
+			{
+				if (bCanDraw)
+				{
+					MyGameMode->AllowPlayerDrawOnCanvas(PlayerId, TargetCanvas);
+				}
+				else
+				{
+					MyGameMode->ForbidPlayerDrawOnCanvas(PlayerId, TargetCanvas);
+				}
+				break;
+			}
 		}
 	}
 }

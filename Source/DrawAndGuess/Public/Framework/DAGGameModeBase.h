@@ -5,6 +5,7 @@
 #include "DAGGameModeBase.generated.h"
 
 class ADAGPlayerController;
+class ADrawingCanvas;
 
 UCLASS()
 class ADAGGameModeBase : public AGameModeBase
@@ -23,6 +24,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="GameMode")
 	TArray<ADAGPlayerController*> GetAllPlayerControllers() const { return PlayerControllerList; }
+
+	void ForbidPlayerDrawOnCanvas(int32 PlayerId, ADrawingCanvas* TargetCanvas);
+
+	void AllowPlayerDrawOnCanvas(int32 PlayerId, ADrawingCanvas* TargetCanvas);
+
+protected:
+
+	ADAGPlayerController* GetPlayerControllerById(int32 PlayerId);
 
 protected:
 

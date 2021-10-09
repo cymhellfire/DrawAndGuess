@@ -84,6 +84,16 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	/**
+	 * Add a new canvas to forbidden list.
+	 */
+	void AddForbiddenCanvas(ADrawingCanvas* NewCanvas);
+
+	/**
+	 * Remove specified canvas from forbidden list.
+	 */
+	void RemoveForbiddenCanvas(ADrawingCanvas* TargetCanvas);
+
 	UFUNCTION(BlueprintCallable, Category="DrawingBrush")
 	void SetBrushSize(float NewSize);
 
@@ -160,6 +170,9 @@ protected:
 
 	UPROPERTY(Transient)
 	UMaterialInstanceDynamic* BrushMaterialInstance;
+
+	/* Canvas list that reject all drawing actions from this brush. */
+	TArray<ADrawingCanvas*> ForbiddenCanvas;
 
 	uint8 bDrawPressed : 1;
 
