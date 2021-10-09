@@ -18,6 +18,8 @@ public:
 
 	virtual void Logout(AController* Exiting) override;
 
+	void SendChatMessage(ADAGPlayerController* SourcePlayer, FString Message);
+
 	void RequestFinishAndExitToMainMenu();
 
 	void NotifyClientGameWillStart();

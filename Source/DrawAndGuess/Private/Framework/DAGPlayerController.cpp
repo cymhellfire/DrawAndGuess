@@ -141,6 +141,19 @@ void ADAGPlayerController::MulticastRemoveAcceptCanvas_Implementation(ADrawingCa
 	}
 }
 
+void ADAGPlayerController::ServerSendChatMessage_Implementation(const FString& Message)
+{
+	if (ADAGGameModeBase* DAGGameMode = Cast<ADAGGameModeBase>(GetWorld()->GetAuthGameMode()))
+	{
+		DAGGameMode->SendChatMessage(this, Message);
+	}
+}
+
+void ADAGPlayerController::ClientReceiveChatMessage_Implementation(FDAGChatMessage Message)
+{
+	OnReceiveChatMessage.Broadcast(Message);
+}
+
 void ADAGPlayerController::ExecCheckAllPlayerId()
 {
 	if (AGameStateBase* MyGameState = GetWorld()->GetGameState())

@@ -2,10 +2,13 @@
 
 #include "CoreMinimal.h"
 #include "DrawAndGuessType.h"
+#include "DAGChatMessage.h"
 #include "DAGPlayerController.generated.h"
 
 class ADrawingActionManager;
 class ADrawingCanvas;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnReceiveChatMessageSignature, FDAGChatMessage, Message);
 
 UCLASS()
 class ADAGPlayerController : public APlayerController
@@ -46,6 +49,12 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRemoveAcceptCanvas(ADrawingCanvas* TargetCanvas);
 
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category="PlayerController")
+	void ServerSendChatMessage(const FString& Message);
+
+	UFUNCTION(Client, Reliable)
+	void ClientReceiveChatMessage(FDAGChatMessage Message);
+
 	UFUNCTION(Exec)
 	void ExecCheckAllPlayerId();
 
@@ -59,6 +68,10 @@ protected:
 
 	UFUNCTION()
 	void OnRep_DrawingActionManager();
+
+public:
+	UPROPERTY(BlueprintAssignable, Category="PlayerController")
+	FOnReceiveChatMessageSignature OnReceiveChatMessage;
 
 protected:
 

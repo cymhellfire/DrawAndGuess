@@ -60,6 +60,17 @@ void ADAGGameModeBase::Logout(AController* Exiting)
 	Super::Logout(Exiting);
 }
 
+void ADAGGameModeBase::SendChatMessage(ADAGPlayerController* SourcePlayer, FString Message)
+{
+	// Get source player name
+	FString AuthorName = SourcePlayer->GetPlayerState<APlayerState>()->GetPlayerName();
+	// Broadcast the chat message to everyone
+	for (ADAGPlayerController* PlayerController : PlayerControllerList)
+	{
+		PlayerController->ClientReceiveChatMessage(FDAGChatMessage{AuthorName, Message});
+	}
+}
+
 void ADAGGameModeBase::RequestFinishAndExitToMainMenu()
 {
 	ADAGPlayerController* LocalPlayerController = nullptr;
