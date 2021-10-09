@@ -99,7 +99,7 @@ void ADAGGameModeBase::ForbidPlayerDrawOnCanvas(int32 PlayerId, ADrawingCanvas* 
 	ADAGPlayerController* TargetPlayer = GetPlayerControllerById(PlayerId);
 	if (TargetPlayer)
 	{
-		TargetPlayer->MulticastAddForbiddenCanvas(TargetCanvas);
+		TargetPlayer->MulticastRemoveAcceptCanvas(TargetCanvas);
 	}
 }
 
@@ -110,7 +110,7 @@ void ADAGGameModeBase::AllowPlayerDrawOnCanvas(int32 PlayerId, ADrawingCanvas* T
 	ADAGPlayerController* TargetPlayer = GetPlayerControllerById(PlayerId);
 	if (TargetPlayer)
 	{
-		TargetPlayer->MulticastRemoveForbiddenCanvas(TargetCanvas);
+		TargetPlayer->MulticastAddAcceptCanvas(TargetCanvas);
 	}
 }
 

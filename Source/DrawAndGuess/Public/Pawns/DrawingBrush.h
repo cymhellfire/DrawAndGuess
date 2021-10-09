@@ -87,12 +87,12 @@ public:
 	/**
 	 * Add a new canvas to forbidden list.
 	 */
-	void AddForbiddenCanvas(ADrawingCanvas* NewCanvas);
+	void AddAcceptCanvas(ADrawingCanvas* NewCanvas);
 
 	/**
 	 * Remove specified canvas from forbidden list.
 	 */
-	void RemoveForbiddenCanvas(ADrawingCanvas* TargetCanvas);
+	void RemoveAcceptCanvas(ADrawingCanvas* TargetCanvas);
 
 	UFUNCTION(BlueprintCallable, Category="DrawingBrush")
 	void SetBrushSize(float NewSize);
@@ -171,8 +171,8 @@ protected:
 	UPROPERTY(Transient)
 	UMaterialInstanceDynamic* BrushMaterialInstance;
 
-	/* Canvas list that reject all drawing actions from this brush. */
-	TArray<ADrawingCanvas*> ForbiddenCanvas;
+	/* Canvas list that accept drawing actions from this brush. */
+	TArray<ADrawingCanvas*> AcceptCanvas;
 
 	uint8 bDrawPressed : 1;
 

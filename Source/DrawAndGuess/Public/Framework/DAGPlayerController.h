@@ -41,10 +41,10 @@ public:
 	void SetDrawingActionManagerToBrush();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastAddForbiddenCanvas(ADrawingCanvas* NewCanvas);
+	void MulticastAddAcceptCanvas(ADrawingCanvas* NewCanvas);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRemoveForbiddenCanvas(ADrawingCanvas* TargetCanvas);
+	void MulticastRemoveAcceptCanvas(ADrawingCanvas* TargetCanvas);
 
 	UFUNCTION(Exec)
 	void ExecCheckAllPlayerId();

@@ -73,7 +73,7 @@ FVector2D ADrawingBrush::GetDrawingPoint(ADrawingCanvas*& DesiredCanvas)
 		if (PlayerController->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, CursorRayHitResult))
 		{
 			ADrawingCanvas* DrawingCanvas = Cast<ADrawingCanvas>(CursorRayHitResult.Actor);
-			if (DrawingCanvas && !ForbiddenCanvas.Contains(DrawingCanvas))
+			if (DrawingCanvas && AcceptCanvas.Contains(DrawingCanvas))
 			{
 				FCollisionQueryParams QueryParams {TEXT("DrawBrushTrace"), true, this};
 				QueryParams.bReturnFaceIndex = true;
@@ -331,19 +331,19 @@ void ADrawingBrush::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	ServerSetBrushTexture(BrushTexture);
 }
 
-void ADrawingBrush::AddForbiddenCanvas(ADrawingCanvas* NewCanvas)
+void ADrawingBrush::AddAcceptCanvas(ADrawingCanvas* NewCanvas)
 {
 	if (IsValid(NewCanvas))
 	{
-		ForbiddenCanvas.AddUnique(NewCanvas);
+		AcceptCanvas.AddUnique(NewCanvas);
 	}
 }
 
-void ADrawingBrush::RemoveForbiddenCanvas(ADrawingCanvas* TargetCanvas)
+void ADrawingBrush::RemoveAcceptCanvas(ADrawingCanvas* TargetCanvas)
 {
 	if (IsValid(TargetCanvas))
 	{
-		ForbiddenCanvas.Remove(TargetCanvas);
+		AcceptCanvas.Remove(TargetCanvas);
 	}
 }
 

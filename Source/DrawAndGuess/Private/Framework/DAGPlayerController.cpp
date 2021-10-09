@@ -125,19 +125,19 @@ void ADAGPlayerController::SetDrawingActionManagerToBrush()
 	}
 }
 
-void ADAGPlayerController::MulticastAddForbiddenCanvas_Implementation(ADrawingCanvas* NewCanvas)
+void ADAGPlayerController::MulticastAddAcceptCanvas_Implementation(ADrawingCanvas* NewCanvas)
 {
 	if (ADrawingBrush* ControllingBrush = Cast<ADrawingBrush>(GetPawn()))
 	{
-		ControllingBrush->AddForbiddenCanvas(NewCanvas);
+		ControllingBrush->AddAcceptCanvas(NewCanvas);
 	}
 }
 
-void ADAGPlayerController::MulticastRemoveForbiddenCanvas_Implementation(ADrawingCanvas* TargetCanvas)
+void ADAGPlayerController::MulticastRemoveAcceptCanvas_Implementation(ADrawingCanvas* TargetCanvas)
 {
 	if (ADrawingBrush* ControllingBrush = Cast<ADrawingBrush>(GetPawn()))
 	{
-		ControllingBrush->RemoveForbiddenCanvas(TargetCanvas);
+		ControllingBrush->RemoveAcceptCanvas(TargetCanvas);
 	}
 }
 

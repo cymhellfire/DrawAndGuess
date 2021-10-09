@@ -38,7 +38,11 @@ void UDrawingAction_Box::StopInput(FVector2D StopPoint)
 		DrawBox();
 	}
 
-	ParentCanvas->ClearPreview();
+	// Clear last preview
+	if (ParentCanvas)
+	{
+		ParentCanvas->ClearPreview();
+	}
 }
 
 void UDrawingAction_Box::ApplyToCanvas()
