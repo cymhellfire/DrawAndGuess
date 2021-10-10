@@ -23,7 +23,7 @@ float UDAGGameUserSettings::GetPencilInterpolateThreshold() const
 	return PencilInterpolationThreshold;
 }
 
-void UDAGGameUserSettings::SetPlayerName(FString NewName)
+void UDAGGameUserSettings::SetPlayerName(const FString& NewName)
 {
 	PlayerName = NewName;
 }
@@ -31,6 +31,30 @@ void UDAGGameUserSettings::SetPlayerName(FString NewName)
 FString UDAGGameUserSettings::GetPlayerName() const
 {
 	return PlayerName;
+}
+
+void UDAGGameUserSettings::SetLastRoomIP(const FString& NewIp)
+{
+	LastRoomIP = NewIp;
+}
+
+void UDAGGameUserSettings::SetWordPoolFilePath(const FString& NewPath)
+{
+	WordPoolFilePath = NewPath;
+}
+
+FString UDAGGameUserSettings::GetWordPoolFileFolder() const
+{
+	if (!WordPoolFilePath.IsEmpty())
+	{
+		int32 CharIndex = -1;
+		if (WordPoolFilePath.FindLastChar('/', CharIndex))
+		{
+			return WordPoolFilePath.Mid(0, CharIndex);
+		}
+	}
+
+	return "";
 }
 
 UDAGGameUserSettings* UDAGGameUserSettings::GetDAGGameUserSettings()

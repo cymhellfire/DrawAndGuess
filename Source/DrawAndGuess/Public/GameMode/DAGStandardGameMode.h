@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Framework/DAGGameModeBase.h"
+#include "Framework/WordInfo.h"
 #include "DAGStandardGameMode.generated.h"
 
 class ADAGStandardGameState;
+class UWordPool;
 
 UENUM(BlueprintType)
 enum EStandardGameModePhase
@@ -56,10 +58,17 @@ protected:
 
 	int32 GetCurrentPlayerId() const;
 
+	void OnWordGuessed(ADAGPlayerController* PlayerController);
+
 	UFUNCTION()
 	void OnDrawingTimerTicked();
 
+	virtual void PreBroadcastChatMessage(ADAGPlayerController* SourcePlayer, FString& InMessage) override;
+
 protected:
+	UPROPERTY(EditDefaultsOnly, Category="GameMode")
+	FString MaskStringForWord;
+
 	UPROPERTY(VisibleAnywhere)
 	TEnumAsByte<EStandardGameModePhase> CurrentGamePhase;
 
@@ -69,17 +78,22 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	int32 MaxDrawingRounds;
 
+	UPROPERTY(Transient)
+	UWordPool* WordPool;
+
 	EStandardGameModePhase PendingGamePhase;
 
 	int32 CurrentPlayerId;
-
-	//int32 CurrentPlayerIndex;
 
 	int32 FinishedPlayerThisRound;
 
 	int32 FinishedRound;
 
+	int32 GuessedPlayerCount;
+
 	TArray<ADrawingCanvas*> CanvasList;
 
 	FTimerHandle DrawingTimerHandle;
+
+	const FWordInfo* CurrentWord;
 };

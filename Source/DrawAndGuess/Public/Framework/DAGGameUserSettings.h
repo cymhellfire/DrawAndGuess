@@ -22,10 +22,25 @@ public:
 	float GetPencilInterpolateThreshold() const;
 
 	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
-	void SetPlayerName(FString NewName);
+	void SetPlayerName(const FString& NewName);
 
 	UFUNCTION(BlueprintCallable, Category="GameUserSetttings")
 	FString GetPlayerName() const;
+
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
+	void SetLastRoomIP(const FString& NewIp);
+
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
+	FString GetLastRoomIP() const { return LastRoomIP; }
+
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
+	void SetWordPoolFilePath(const FString& NewPath);
+
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
+	FString GetWordPoolFilePath() const { return WordPoolFilePath; }
+
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
+	FString GetWordPoolFileFolder() const;
 
 	UFUNCTION(BlueprintCallable, Category="GameInstance")
 	static UDAGGameUserSettings* GetDAGGameUserSettings();
@@ -36,4 +51,10 @@ protected:
 
 	UPROPERTY(config)
 	FString PlayerName;
+
+	UPROPERTY(config)
+	FString LastRoomIP;
+
+	UPROPERTY(config)
+	FString WordPoolFilePath;
 };

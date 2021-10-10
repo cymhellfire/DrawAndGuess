@@ -93,9 +93,15 @@ void ADAGPlayerController::HandleReturnToMainMenu()
 
 void ADAGPlayerController::ServerSetPlayerName_Implementation(const FString& PlayerName)
 {
+	FString UniqueName = PlayerName;
+	if (ADAGGameStateBase* GameStateBase = Cast<ADAGGameStateBase>(GetWorld()->GetGameState()))
+	{
+		UniqueName = GameStateBase->GetUniquePlayerName(PlayerName);
+	}
+
 	if (ADAGPlayerState* MyPlayerState = GetPlayerState<ADAGPlayerState>())
 	{
-		MyPlayerState->SetPlayerName(PlayerName);
+		MyPlayerState->SetPlayerName(UniqueName);
 	}
 }
 
@@ -159,6 +165,11 @@ void ADAGPlayerController::ServerSendChatMessage_Implementation(const FString& M
 void ADAGPlayerController::ClientReceiveChatMessage_Implementation(FDAGChatMessage Message)
 {
 	OnReceiveChatMessage.Broadcast(Message);
+}
+
+void ADAGPlayerController::ClientReceiveWord_Implementation(const FString& Word)
+{
+	OnReceiveWord.Broadcast(Word);
 }
 
 void ADAGPlayerController::ExecCheckAllPlayerId()

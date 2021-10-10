@@ -62,6 +62,9 @@ void ADAGGameModeBase::Logout(AController* Exiting)
 
 void ADAGGameModeBase::SendChatMessage(ADAGPlayerController* SourcePlayer, FString Message)
 {
+	// Process the message before send to others
+	PreBroadcastChatMessage(SourcePlayer, Message);
+
 	// Get source player name
 	FString AuthorName = SourcePlayer->GetPlayerState<APlayerState>()->GetPlayerName();
 	// Broadcast the chat message to everyone

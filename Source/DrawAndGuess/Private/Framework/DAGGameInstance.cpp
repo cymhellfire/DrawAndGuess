@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Localization.h"
 #include "Framework/DAGGameStateBase.h"
+#include "Framework/DAGGameUserSettings.h"
 
 namespace DAGGameInstanceState
 {
@@ -557,7 +558,13 @@ void UDAGGameInstance::DirectlyConnectToHost(FString IpAddress)
 
 	// Setup network failure handler
 	SetupNetworkFailureHandler();
-	
+
+	// Save ip address
+	if (UDAGGameUserSettings* UserSettings = UDAGGameUserSettings::GetDAGGameUserSettings())
+	{
+		UserSettings->SetLastRoomIP(IpAddress);
+	}
+
 	GoToState(DAGGameInstanceState::Playing);
 }
 

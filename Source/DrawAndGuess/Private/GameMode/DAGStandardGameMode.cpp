@@ -4,7 +4,10 @@
 #include "GameMode/DAGStandardGameMode.h"
 #include "Actors/DrawingCanvas.h"
 #include "DrawAndGuess/DrawAndGuess.h"
+#include "Framework/DAGGameInstance.h"
+#include "Framework/DAGGameUserSettings.h"
 #include "Framework/DAGPlayerController.h"
+#include "Framework/WordPool.h"
 #include "GameFramework/PlayerState.h"
 #include "GameMode/DAGStandardGameState.h"
 
@@ -86,6 +89,20 @@ void ADAGStandardGameMode::OnGameStarted()
 		StandardGameState->SetCurrentPlayerIndex(0);
 	}
 
+	// Load the word pool
+	if (UDAGGameInstance* GameInstance = Cast<UDAGGameInstance>(GetGameInstance()))
+	{
+		if (WordPool == nullptr)
+		{
+			WordPool = NewObject<UWordPool>(this, TEXT("WordPool"));
+		}
+
+		if (UDAGGameUserSettings* UserSettings = UDAGGameUserSettings::GetDAGGameUserSettings())
+		{
+			WordPool->LoadFromFile(UserSettings->GetWordPoolFilePath());
+		}
+	}
+
 	// Start the player round
 	SetNextPhase(SGMP_RoundStart);
 }
@@ -106,10 +123,28 @@ void ADAGStandardGameMode::OnRoundStarted()
 		StandardGameState->SetRemainTime(DrawingTimePerRound);
 	}
 
-	UE_LOG(LogInit, Log, TEXT("[GameMode] Player %d round start."), CurrentPlayerId);
+	// Get word for this round
+	CurrentWord = WordPool->GetRandomWord();
+	if (CurrentWord)
+	{
+		// Notify current player the word
+		if (ADAGPlayerController* CurrentPlayerController = GetPlayerControllerById(CurrentPlayerId))
+		{
+			CurrentPlayerController->ClientReceiveWord(CurrentWord->Word);
+		}
 
-	// Start drawing phase
-	SetNextPhase(SGMP_PlayerDrawing);
+		GuessedPlayerCount = 0;
+
+		UE_LOG(LogInit, Log, TEXT("[GameMode] Player %d round start."), CurrentPlayerId);
+
+		// Start drawing phase
+		SetNextPhase(SGMP_PlayerDrawing);
+	}
+	else
+	{
+		UE_LOG(LogInit, Error, TEXT("[GameMode] No valid word to guess."));
+		SetNextPhase(SGMP_GameFinish);
+	}
 }
 
 void ADAGStandardGameMode::OnPlayerDrawing()
@@ -200,6 +235,17 @@ int32 ADAGStandardGameMode::GetCurrentPlayerId() const
 	return -1;
 }
 
+void ADAGStandardGameMode::OnWordGuessed(ADAGPlayerController* PlayerController)
+{
+	GuessedPlayerCount++;
+
+	// Check if all players guessed the word (There should be only one player drawing for now.)
+	if (GuessedPlayerCount == PlayerControllerList.Num() - 1)
+	{
+		SetNextPhase(SGMP_RoundEnd);
+	}
+}
+
 void ADAGStandardGameMode::OnDrawingTimerTicked()
 {
 	// Decrease remaining time
@@ -213,5 +259,18 @@ void ADAGStandardGameMode::OnDrawingTimerTicked()
 			// Enter round finish phase
 			SetNextPhase(SGMP_RoundEnd);
 		}
+	}
+}
+
+void ADAGStandardGameMode::PreBroadcastChatMessage(ADAGPlayerController* SourcePlayer, FString& InMessage)
+{
+	// Check if this message match current word
+	if (CurrentWord->IsMatch(InMessage))
+	{
+		// Replace the message if matched
+		InMessage = MaskStringForWord;
+
+		// Notify game
+		OnWordGuessed(SourcePlayer);
 	}
 }

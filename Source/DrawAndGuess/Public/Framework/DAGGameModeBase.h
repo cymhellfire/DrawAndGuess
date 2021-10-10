@@ -35,6 +35,8 @@ protected:
 
 	ADAGPlayerController* GetPlayerControllerById(int32 PlayerId);
 
+	virtual void PreBroadcastChatMessage(ADAGPlayerController* SourcePlayer, FString& InMessage) {}
+
 protected:
 
 	TArray<ADAGPlayerController*> PlayerControllerList;
