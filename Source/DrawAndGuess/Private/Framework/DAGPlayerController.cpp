@@ -84,6 +84,11 @@ void ADAGPlayerController::ServerReceivePlayerInfo_Implementation(const FString&
 	{
 		MyPlayerState->SetPlayerName(UniqueName);
 	}
+
+	if (ADAGGameModeBase* MyGameMode = Cast<ADAGGameModeBase>(GetWorld()->GetAuthGameMode()))
+	{
+		MyGameMode->MarkPlayerAsReady(this);
+	}
 }
 
 void ADAGPlayerController::HandleReturnToMainMenu()
@@ -102,6 +107,11 @@ void ADAGPlayerController::ServerSetPlayerName_Implementation(const FString& Pla
 	if (ADAGPlayerState* MyPlayerState = GetPlayerState<ADAGPlayerState>())
 	{
 		MyPlayerState->SetPlayerName(UniqueName);
+	}
+
+	if (ADAGGameModeBase* MyGameMode = Cast<ADAGGameModeBase>(GetWorld()->GetAuthGameMode()))
+	{
+		MyGameMode->MarkPlayerAsReady(this);
 	}
 }
 
@@ -170,6 +180,21 @@ void ADAGPlayerController::ClientReceiveChatMessage_Implementation(FDAGChatMessa
 void ADAGPlayerController::ClientReceiveWord_Implementation(const FString& Word)
 {
 	OnReceiveWord.Broadcast(Word);
+}
+
+void ADAGPlayerController::ClearDrawingActions()
+{
+	if (ADrawingBrush* DrawingBrush = Cast<ADrawingBrush>(GetPawn()))
+	{
+		if (GetNetMode() == NM_Client)
+		{
+			DrawingBrush->ServerClear();
+		}
+		else
+		{
+			DrawingBrush->MulticastClear();
+		}
+	}
 }
 
 void ADAGPlayerController::ExecCheckAllPlayerId()

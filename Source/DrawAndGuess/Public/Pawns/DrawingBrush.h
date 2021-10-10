@@ -134,6 +134,12 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastUndo();
 
+	UFUNCTION(Server, Reliable)
+	void ServerClear();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastClear();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="DrawingBrush")
 	UMaterial* BrushMaterial;

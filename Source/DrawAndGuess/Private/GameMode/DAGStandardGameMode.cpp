@@ -7,6 +7,7 @@
 #include "Framework/DAGGameInstance.h"
 #include "Framework/DAGGameUserSettings.h"
 #include "Framework/DAGPlayerController.h"
+#include "Framework/DAGPlayerState.h"
 #include "Framework/WordPool.h"
 #include "GameFramework/PlayerState.h"
 #include "GameMode/DAGStandardGameState.h"
@@ -42,9 +43,6 @@ void ADAGStandardGameMode::BeginPlay()
 	{
 		CanvasList.AddUnique(*Iter);
 	}
-
-	// Test code
-	SetNextPhase(SGMP_GameStart);
 }
 
 void ADAGStandardGameMode::SetNextPhase(EStandardGameModePhase NextPhase)
@@ -131,6 +129,12 @@ void ADAGStandardGameMode::OnRoundStarted()
 		if (ADAGPlayerController* CurrentPlayerController = GetPlayerControllerById(CurrentPlayerId))
 		{
 			CurrentPlayerController->ClientReceiveWord(CurrentWord->Word);
+
+			// Start the drawing state
+			if (ADAGPlayerState* CurrentPlayerState = CurrentPlayerController->GetPlayerState<ADAGPlayerState>())
+			{
+				CurrentPlayerState->SetGameState(EPlayerGameState::PGS_Drawing);
+			}
 		}
 
 		GuessedPlayerCount = 0;
@@ -163,6 +167,18 @@ void ADAGStandardGameMode::OnRoundEnded()
 	for (ADrawingCanvas* DrawingCanvas : CanvasList)
 	{
 		ForbidPlayerDrawOnCanvas(CurrentPlayerId, DrawingCanvas);
+	}
+
+	// Notify current player the word
+	if (ADAGPlayerController* CurrentPlayerController = GetPlayerControllerById(CurrentPlayerId))
+	{
+		// Clear the drawing actions
+		CurrentPlayerController->ClearDrawingActions();
+
+		if (ADAGPlayerState* CurrentPlayerState = CurrentPlayerController->GetPlayerState<ADAGPlayerState>())
+		{
+			CurrentPlayerState->SetGameState(EPlayerGameState::PGS_Guessing);
+		}
 	}
 
 	// Switch to next player
@@ -273,4 +289,10 @@ void ADAGStandardGameMode::PreBroadcastChatMessage(ADAGPlayerController* SourceP
 		// Notify game
 		OnWordGuessed(SourcePlayer);
 	}
+}
+
+void ADAGStandardGameMode::OnAllPlayerReady()
+{
+	// Start game after all players ready
+	SetNextPhase(SGMP_GameStart);
 }

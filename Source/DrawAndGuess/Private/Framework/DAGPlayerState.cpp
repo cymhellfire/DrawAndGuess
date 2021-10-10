@@ -14,6 +14,7 @@ void ADAGPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	SharedParams.bIsPushBased = true;
 
 	DOREPLIFETIME_WITH_PARAMS(ADAGPlayerState, LobbyState, SharedParams);
+	DOREPLIFETIME_WITH_PARAMS(ADAGPlayerState, GameState, SharedParams);
 }
 
 void ADAGPlayerState::SetLobbyState_Implementation(EPlayerLobbyState NewLobbyState)
@@ -34,6 +35,20 @@ void ADAGPlayerState::SetLobbyState_Implementation(EPlayerLobbyState NewLobbySta
 	}
 }
 
+void ADAGPlayerState::SetGameState(EPlayerGameState NewGameState)
+{
+	if (GetNetMode() == NM_Client)
+		return;
+
+	if (NewGameState != GameState)
+	{
+		GameState = NewGameState;
+		MARK_PROPERTY_DIRTY_FROM_NAME(ADAGPlayerState, GameState, this);
+
+		OnRep_GameState();
+	}
+}
+
 void ADAGPlayerState::OnRep_PlayerName()
 {
 	Super::OnRep_PlayerName();
@@ -46,4 +61,10 @@ void ADAGPlayerState::OnRep_LobbyState()
 {
 	// Broadcast the event
 	OnPlayerLobbyInfoChanged.Broadcast();
+}
+
+void ADAGPlayerState::OnRep_GameState()
+{
+	// Broadcast the event
+	OnPlayerGameStateChanged.Broadcast(GameState);
 }

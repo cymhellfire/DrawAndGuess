@@ -7,6 +7,9 @@
 #include "GameFramework/PlayerState.h"
 #include "DAGPlayerState.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPlayerLobbyInfoChangedSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerGameStateChangedSignature, EPlayerGameState, NewState);
+
 /**
  * 
  */
@@ -16,9 +19,11 @@ class DRAWANDGUESS_API ADAGPlayerState : public APlayerState
 	GENERATED_BODY()
 
 public:
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPlayerLobbyInfoChangedSignature);
 	UPROPERTY(BlueprintAssignable, Category="PlayerState")
 	FPlayerLobbyInfoChangedSignature OnPlayerLobbyInfoChanged;
+
+	UPROPERTY(BlueprintAssignable, Category="PlayerState")
+	FPlayerGameStateChangedSignature OnPlayerGameStateChanged;
 
 	UFUNCTION(Server, Reliable)
 	void SetLobbyState(EPlayerLobbyState NewLobbyState);
@@ -26,11 +31,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category="PlayerState")
 	EPlayerLobbyState GetLobbyState() const { return LobbyState; }
 
+	void SetGameState(EPlayerGameState NewGameState);
+
 	virtual void OnRep_PlayerName() override;
 
+protected:
 	UFUNCTION()
 	void OnRep_LobbyState();
+
+	UFUNCTION()
+	void OnRep_GameState();
 protected:
-	UPROPERTY(ReplicatedUsing="OnRep_LobbyState")
+	UPROPERTY(ReplicatedUsing=OnRep_LobbyState)
 	EPlayerLobbyState LobbyState;
+
+	UPROPERTY(ReplicatedUsing=OnRep_GameState)
+	EPlayerGameState GameState;
 };

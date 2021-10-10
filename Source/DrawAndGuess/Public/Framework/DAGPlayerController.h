@@ -59,6 +59,8 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientReceiveWord(const FString& Word);
 
+	void ClearDrawingActions();
+
 	UFUNCTION(Exec)
 	void ExecCheckAllPlayerId();
 

@@ -413,6 +413,16 @@ void ADrawingBrush::SetDrawingActionType(EDrawingActionType NewActionType)
 	}
 }
 
+void ADrawingBrush::ServerClear_Implementation()
+{
+	MulticastClear();
+}
+
+void ADrawingBrush::MulticastClear_Implementation()
+{
+	GetDrawingActionManager()->Clear();
+}
+
 void ADrawingBrush::ServerSetDrawingActionType_Implementation(EDrawingActionType NewActionType)
 {
 	SyncDrawingActionType = NewActionType;

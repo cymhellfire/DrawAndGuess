@@ -95,3 +95,37 @@ void ADrawingActionManager::Undo()
 	// Destruct undo action
 	UndoAction->ConditionalBeginDestroy();
 }
+
+void ADrawingActionManager::Clear()
+{
+	if (LastOperatedCanvas == nullptr)
+	{
+		UE_LOG(LogInit, Log, TEXT("[DrawingActionManager] No canvas selected."));
+		return;
+	}
+
+	if (!DrawingActionMap.Contains(LastOperatedCanvas))
+	{
+		UE_LOG(LogInit, Log, TEXT("[DrawingActionManager] No drawing record on canvas %s"), *LastOperatedCanvas->GetName());
+		return;
+	}
+
+	TArray<UDrawingActionBase*>* DrawingActionStack = DrawingActionMap.Find(LastOperatedCanvas);
+	if (DrawingActionStack->Num() == 0)
+	{
+		UE_LOG(LogInit, Log, TEXT("[DrawingActionManager] Nothing to clear."));
+		return;
+	}
+	UDrawingActionBase* SampleAction = (*DrawingActionStack)[0];
+	ADrawingCanvas* ClearCanvas = SampleAction->GetParentCanvas();
+
+	// Clear all actions
+	for (UDrawingActionBase* ActionBase : *DrawingActionStack)
+	{
+		ClearCanvas->UnregisterDrawingAction(ActionBase);
+		ActionBase->ConditionalBeginDestroy();
+	}
+	DrawingActionStack->Empty();
+
+	ClearCanvas->Refresh();
+}

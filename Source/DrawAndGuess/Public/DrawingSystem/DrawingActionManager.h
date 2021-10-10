@@ -34,6 +34,11 @@ public:
 	 */
 	void Undo();
 
+	/**
+	 * Clear all drawing actions.
+	 */
+	void Clear();
+
 	void SetLocalFlag(bool NewValue) { bIsLocal = NewValue; }
 
 	bool GetLocalFlag() const { return bIsLocal; }

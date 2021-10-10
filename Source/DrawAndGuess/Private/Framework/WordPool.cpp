@@ -8,15 +8,15 @@ void UWordPool::LoadFromFile(FString Path)
 	TArray<FString> LoadedStrings;
 	FFileHelper::LoadFileToStringArray(LoadedStrings, *Path);
 
-	int32 LineNum = 0;
+	int32 WordCount = 0;
 	for (FString LoadedString : LoadedStrings)
 	{
-		UE_LOG(LogInit, Log, TEXT("[WordPool] Line %d: %s"), LineNum, *LoadedString);
-		LineNum++;
-
-		if (!LoadedString.StartsWith("#"))
+		if (!LoadedString.StartsWith("#") && !LoadedString.IsEmpty())
 		{
 			WordList.AddUnique(FWordInfo{LoadedString});
+
+			UE_LOG(LogInit, Log, TEXT("[WordPool] Word %d: %s"), WordCount, *LoadedString);
+			WordCount++;
 		}
 	}
 }

@@ -31,13 +31,20 @@ public:
 
 	void AllowPlayerDrawOnCanvas(int32 PlayerId, ADrawingCanvas* TargetCanvas);
 
+	virtual void MarkPlayerAsReady(ADAGPlayerController* ReadyPlayer);
+
 protected:
 
 	ADAGPlayerController* GetPlayerControllerById(int32 PlayerId);
 
 	virtual void PreBroadcastChatMessage(ADAGPlayerController* SourcePlayer, FString& InMessage) {}
 
+	/** Triggered when all human players logged in. */
+	virtual void OnAllPlayerReady() {}
+
 protected:
 
 	TArray<ADAGPlayerController*> PlayerControllerList;
+
+	TArray<ADAGPlayerController*> ReadyController;
 };

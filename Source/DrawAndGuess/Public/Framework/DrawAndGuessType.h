@@ -20,3 +20,10 @@ enum class EPlayerLobbyState : uint8
 	PLS_Ready			UMETA(DisplayName="Ready"),
 	PLS_Host			UMETA(DisplayName="Host"),
 };
+
+UENUM(BlueprintType)
+enum class EPlayerGameState : uint8
+{
+	PGS_Guessing,
+	PGS_Drawing,
+};

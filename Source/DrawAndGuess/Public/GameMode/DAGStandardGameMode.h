@@ -65,6 +65,8 @@ protected:
 
 	virtual void PreBroadcastChatMessage(ADAGPlayerController* SourcePlayer, FString& InMessage) override;
 
+	virtual void OnAllPlayerReady() override;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="GameMode")
 	FString MaskStringForWord;

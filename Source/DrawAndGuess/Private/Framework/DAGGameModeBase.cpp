@@ -1,6 +1,7 @@
 #include "Framework/DAGGameModeBase.h"
 
 #include "DrawingSystem/DrawingActionManager.h"
+#include "Framework/DAGGameInstance.h"
 #include "Framework/DAGGameStateBase.h"
 #include "Framework/DAGPlayerController.h"
 #include "Framework/DAGPlayerState.h"
@@ -125,6 +126,22 @@ void ADAGGameModeBase::AllowPlayerDrawOnCanvas(int32 PlayerId, ADrawingCanvas* T
 	if (TargetPlayer)
 	{
 		TargetPlayer->MulticastAddAcceptCanvas(TargetCanvas);
+	}
+}
+
+void ADAGGameModeBase::MarkPlayerAsReady(ADAGPlayerController* ReadyPlayer)
+{
+	if (!ReadyController.Contains(ReadyPlayer))
+	{
+		ReadyController.AddUnique(ReadyPlayer);
+
+		UE_LOG(LogInit, Log, TEXT("[GameMode] Player %s ready."), *ReadyPlayer->GetPlayerState<APlayerState>()->GetPlayerName());
+
+		UDAGGameInstance* GameInstance = GetGameInstance<UDAGGameInstance>();
+		if (GameInstance && ReadyController.Num() >= GameInstance->GamePlayerCount)
+		{
+			OnAllPlayerReady();
+		}
 	}
 }
 
