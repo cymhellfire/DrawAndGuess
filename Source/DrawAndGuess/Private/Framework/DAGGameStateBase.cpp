@@ -2,6 +2,7 @@
 
 #include "Framework/DAGGameModeBase.h"
 #include "Framework/DAGPlayerController.h"
+#include "GameFramework/PlayerState.h"
 
 
 void ADAGGameStateBase::AddPlayerState(APlayerState* PlayerState)
@@ -50,4 +51,26 @@ void ADAGGameStateBase::FinishGameAndReturnToMainMenu()
 			PlayerController->HandleReturnToMainMenu();
 		}
 	}
+}
+
+FString ADAGGameStateBase::GetUniquePlayerName(FString PlayerName)
+{
+	int32 DuplicatedCount = 0;
+	FRegexPattern NamePattern(FString::Printf(TEXT("%s(_\\d)*"), *PlayerName));
+	for (APlayerState* PlayerState : PlayerArray)
+	{
+		FString CheckName = PlayerState->GetPlayerName();
+		FRegexMatcher Matcher(NamePattern, CheckName);
+		if (Matcher.FindNext())
+		{
+			DuplicatedCount++;
+		}
+	}
+
+	if (DuplicatedCount > 0)
+	{
+		return FString::Printf(TEXT("%s_%d"), *PlayerName, DuplicatedCount);
+	}
+
+	return PlayerName;
 }

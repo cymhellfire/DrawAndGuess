@@ -21,4 +21,6 @@ public:
 	virtual void RemovePlayerState(APlayerState* PlayerState) override;
 
 	void FinishGameAndReturnToMainMenu();
+
+	FString GetUniquePlayerName(FString PlayerName);
 };

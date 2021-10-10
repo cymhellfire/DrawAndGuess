@@ -6,6 +6,7 @@
 #include "DrawAndGuess/DrawAndGuess.h"
 #include "Framework/DAGPlayerController.h"
 #include "GameFramework/PlayerState.h"
+#include "GameMode/DAGStandardGameState.h"
 
 ADAGStandardGameMode::ADAGStandardGameMode(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -80,7 +81,10 @@ void ADAGStandardGameMode::SwitchToPhase(EStandardGameModePhase NewPhase)
 
 void ADAGStandardGameMode::OnGameStarted()
 {
-	CurrentPlayerIndex = 0;
+	if (ADAGStandardGameState* StandardGameState = GetGameState<ADAGStandardGameState>())
+	{
+		StandardGameState->SetCurrentPlayerIndex(0);
+	}
 
 	// Start the player round
 	SetNextPhase(SGMP_RoundStart);
@@ -88,12 +92,18 @@ void ADAGStandardGameMode::OnGameStarted()
 
 void ADAGStandardGameMode::OnRoundStarted()
 {
-	CurrentPlayerId = GetPlayerIdByIndex(CurrentPlayerIndex);
+	CurrentPlayerId = GetPlayerIdByIndex(GetGameState<ADAGStandardGameState>()->GetCurrentPlayerIndex());
 
 	// Enable player drawing function for all canvas
 	for (ADrawingCanvas* DrawingCanvas : CanvasList)
 	{
 		AllowPlayerDrawOnCanvas(CurrentPlayerId, DrawingCanvas);
+	}
+
+	// Reset drawing remain time
+	if (ADAGStandardGameState* StandardGameState = GetGameState<ADAGStandardGameState>())
+	{
+		StandardGameState->SetRemainTime(DrawingTimePerRound);
 	}
 
 	UE_LOG(LogInit, Log, TEXT("[GameMode] Player %d round start."), CurrentPlayerId);
@@ -105,12 +115,15 @@ void ADAGStandardGameMode::OnRoundStarted()
 void ADAGStandardGameMode::OnPlayerDrawing()
 {
 	// Setup the drawing handle
-	GetWorldTimerManager().SetTimer(DrawingTimerHandle, this, &ADAGStandardGameMode::OnDrawingTimerExpired,
-		DrawingTimePerRound);
+	GetWorldTimerManager().SetTimer(DrawingTimerHandle, this, &ADAGStandardGameMode::OnDrawingTimerTicked,
+		GetWorld()->GetWorldSettings()->GetEffectiveTimeDilation(), true);
 }
 
 void ADAGStandardGameMode::OnRoundEnded()
 {
+	// Clear the timer handle
+	GetWorldTimerManager().ClearTimer(DrawingTimerHandle);
+
 	// Disable player drawing function for all canvas
 	for (ADrawingCanvas* DrawingCanvas : CanvasList)
 	{
@@ -123,26 +136,37 @@ void ADAGStandardGameMode::OnRoundEnded()
 
 void ADAGStandardGameMode::OnSwitchPlayer()
 {
-	CurrentPlayerIndex++;
-	if (CurrentPlayerIndex >= PlayerControllerList.Num())
+	ADAGStandardGameState* StandardGameState = GetGameState<ADAGStandardGameState>();
+	if (StandardGameState)
 	{
-		// All players finished this round
-		if (FinishedRound >= MaxDrawingRounds)
+		int32 CurrentPlayerIndex = StandardGameState->GetCurrentPlayerIndex();
+		CurrentPlayerIndex++;
+		if (CurrentPlayerIndex >= PlayerControllerList.Num())
 		{
-			// Finish the game
-			SetNextPhase(SGMP_GameFinish);
-			return;
+			// All players finished this round
+			if (FinishedRound >= MaxDrawingRounds)
+			{
+				// Finish the game
+				SetNextPhase(SGMP_GameFinish);
+				return;
+			}
+
+			// Reset the index to start
+			CurrentPlayerIndex = 0;
+
+			// Increase finished round counter
+			FinishedRound++;
 		}
 
-		// Reset the index to start
-		CurrentPlayerIndex = 0;
+		StandardGameState->SetCurrentPlayerIndex(CurrentPlayerIndex);
 
-		// Increase finished round counter
-		FinishedRound++;
+		// Start a new round
+		SetNextPhase(SGMP_RoundStart);
 	}
-
-	// Start a new round
-	SetNextPhase(SGMP_RoundStart);
+	else
+	{
+		SetNextPhase(SGMP_GameFinish);
+	}
 }
 
 void ADAGStandardGameMode::OnGameFinished()
@@ -166,11 +190,28 @@ int32 ADAGStandardGameMode::GetPlayerIdByIndex(int32 Index) const
 	return -1;
 }
 
-void ADAGStandardGameMode::OnDrawingTimerExpired()
+int32 ADAGStandardGameMode::GetCurrentPlayerId() const
 {
-	// Clear the handle
-	GetWorldTimerManager().ClearTimer(DrawingTimerHandle);
+	if (ADAGStandardGameState* StandardGameState = GetGameState<ADAGStandardGameState>())
+	{
+		return StandardGameState->GetCurrentPlayerIndex();
+	}
 
-	// Enter round finish phase
-	SetNextPhase(SGMP_RoundEnd);
+	return -1;
+}
+
+void ADAGStandardGameMode::OnDrawingTimerTicked()
+{
+	// Decrease remaining time
+	if (ADAGStandardGameState* StandardGameState = GetGameState<ADAGStandardGameState>())
+	{
+		StandardGameState->SetRemainTime(StandardGameState->GetRemainTime() - 1);
+
+		// Enter next phase if no remaining time left
+		if (StandardGameState->GetRemainTime() <= 0)
+		{
+			// Enter round finish phase
+			SetNextPhase(SGMP_RoundEnd);
+		}
+	}
 }

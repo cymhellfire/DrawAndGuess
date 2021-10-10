@@ -5,6 +5,7 @@
 #include "DrawingSystem/DrawingActionManager.h"
 #include "Framework/DAGGameInstance.h"
 #include "Framework/DAGGameModeBase.h"
+#include "Framework/DAGGameStateBase.h"
 #include "Framework/DAGGameUserSettings.h"
 #include "Framework/DAGPlayerState.h"
 #include "GameFramework/PlayerState.h"
@@ -72,10 +73,16 @@ void ADAGPlayerController::ClientUploadPlayerInfo_Implementation()
 
 void ADAGPlayerController::ServerReceivePlayerInfo_Implementation(const FString& InPlayerName)
 {
+	FString UniqueName = InPlayerName;
+	if (ADAGGameStateBase* GameStateBase = Cast<ADAGGameStateBase>(GetWorld()->GetGameState()))
+	{
+		UniqueName = GameStateBase->GetUniquePlayerName(InPlayerName);
+	}
+
 	// Sync player name with uploaded data
 	if (APlayerState* MyPlayerState = GetPlayerState<APlayerState>())
 	{
-		MyPlayerState->SetPlayerName(InPlayerName);
+		MyPlayerState->SetPlayerName(UniqueName);
 	}
 }
 

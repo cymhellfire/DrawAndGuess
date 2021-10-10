@@ -6,6 +6,8 @@
 #include "Framework/DAGGameModeBase.h"
 #include "DAGStandardGameMode.generated.h"
 
+class ADAGStandardGameState;
+
 UENUM(BlueprintType)
 enum EStandardGameModePhase
 {
@@ -52,8 +54,10 @@ protected:
 
 	int32 GetPlayerIdByIndex(int32 Index) const;
 
+	int32 GetCurrentPlayerId() const;
+
 	UFUNCTION()
-	void OnDrawingTimerExpired();
+	void OnDrawingTimerTicked();
 
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -69,7 +73,7 @@ protected:
 
 	int32 CurrentPlayerId;
 
-	int32 CurrentPlayerIndex;
+	//int32 CurrentPlayerIndex;
 
 	int32 FinishedPlayerThisRound;
 
