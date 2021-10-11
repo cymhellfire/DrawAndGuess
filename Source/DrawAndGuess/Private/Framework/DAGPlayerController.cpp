@@ -182,6 +182,11 @@ void ADAGPlayerController::ClientReceiveWord_Implementation(const FString& Word)
 	OnReceiveWord.Broadcast(Word);
 }
 
+void ADAGPlayerController::ClientReceiveHint_Implementation(const FString& Hint)
+{
+	OnReceiveHint.Broadcast(Hint);
+}
+
 void ADAGPlayerController::ClearDrawingActions()
 {
 	if (ADrawingBrush* DrawingBrush = Cast<ADrawingBrush>(GetPawn()))

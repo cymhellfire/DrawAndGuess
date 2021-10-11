@@ -33,6 +33,9 @@ public:
 
 	void SetGameState(EPlayerGameState NewGameState);
 
+	UFUNCTION(BlueprintCallable, Category="PlayerState")
+	EPlayerGameState GetGameState() const { return GameState; }
+
 	virtual void OnRep_PlayerName() override;
 
 protected:

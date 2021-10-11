@@ -130,6 +130,15 @@ void ADAGStandardGameMode::OnRoundStarted()
 		{
 			CurrentPlayerController->ClientReceiveWord(CurrentWord->Word);
 
+			// Notify other players the hint
+			for (ADAGPlayerController* PlayerController : PlayerControllerList)
+			{
+				if (PlayerController == CurrentPlayerController)
+					continue;
+
+				PlayerController->ClientReceiveHint(FString::Printf(TEXT("%d个字"), CurrentWord->Word.Len()));
+			}
+
 			// Start the drawing state
 			if (ADAGPlayerState* CurrentPlayerState = CurrentPlayerController->GetPlayerState<ADAGPlayerState>())
 			{

@@ -9,7 +9,7 @@ class ADrawingActionManager;
 class ADrawingCanvas;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnReceiveChatMessageSignature, FDAGChatMessage, Message);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnReceiveWordSignature, FString, Word);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnReceiveStringSignature, FString, Word);
 
 UCLASS()
 class ADAGPlayerController : public APlayerController
@@ -59,6 +59,9 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientReceiveWord(const FString& Word);
 
+	UFUNCTION(Client, Reliable)
+	void ClientReceiveHint(const FString& Hint);
+
 	void ClearDrawingActions();
 
 	UFUNCTION(Exec)
@@ -80,7 +83,10 @@ public:
 	FOnReceiveChatMessageSignature OnReceiveChatMessage;
 
 	UPROPERTY(BlueprintAssignable, Category="PlayerController")
-	FOnReceiveWordSignature OnReceiveWord;
+	FOnReceiveStringSignature OnReceiveWord;
+
+	UPROPERTY(BlueprintAssignable, Category="PlayerController")
+	FOnReceiveStringSignature OnReceiveHint;
 
 protected:
 
