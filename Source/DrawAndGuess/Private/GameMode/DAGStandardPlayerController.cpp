@@ -12,3 +12,9 @@ void ADAGStandardPlayerController::ServerChooseWord_Implementation(int32 Index)
 		StandardGameMode->ChooseWordByIndex(Index);
 	}
 }
+
+void ADAGStandardPlayerController::ClientOnWordChosen_Implementation()
+{
+	// Invoke blueprint function
+	K2_OnWordChosen();
+}

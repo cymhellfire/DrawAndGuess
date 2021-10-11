@@ -18,4 +18,12 @@ public:
 
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category="PlayerController")
 	void ServerChooseWord(int32 Index);
+
+	UFUNCTION(Client, Reliable)
+	void ClientOnWordChosen();
+
+protected:
+
+	UFUNCTION(BlueprintImplementableEvent, Category="PlayerController", meta=(DisplayName="OnWordChosen"))
+	void K2_OnWordChosen();
 };

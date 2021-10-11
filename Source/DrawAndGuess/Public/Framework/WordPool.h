@@ -19,7 +19,7 @@ public:
 
 	void LoadFromFile(FString Path);
 
-	const FWordInfo* GetRandomWord() const;
+	TArray<const FWordInfo*> GetRandomWord(int32 Count = 1) const;
 
 	int32 GetWordCount() const { return WordList.Num(); }
 

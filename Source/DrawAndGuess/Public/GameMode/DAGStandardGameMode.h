@@ -68,6 +68,9 @@ protected:
 	UFUNCTION()
 	void OnDrawingTimerTicked();
 
+	UFUNCTION()
+	void OnChooseWordTimerTicked();
+
 	void OnWordChosen();
 
 	virtual void PreBroadcastChatMessage(ADAGPlayerController* SourcePlayer, FString& InMessage) override;
@@ -83,6 +86,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	int32 DrawingTimePerRound;
+
+	UPROPERTY(VisibleAnywhere)
+	int32 ChooseWordTimePerRound;
 
 	UPROPERTY(VisibleAnywhere)
 	int32 MaxDrawingRounds;
@@ -103,8 +109,9 @@ protected:
 	TArray<ADrawingCanvas*> CanvasList;
 
 	FTimerHandle DrawingTimerHandle;
+	FTimerHandle ChooseWordTimerHandle;
 
-	TArray<FWordInfo> CandidateWords;
+	TArray<const FWordInfo*> CandidateWords;
 
 	const FWordInfo* CurrentWord;
 };

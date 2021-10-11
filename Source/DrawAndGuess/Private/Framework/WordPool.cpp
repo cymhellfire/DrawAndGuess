@@ -21,13 +21,30 @@ void UWordPool::LoadFromFile(FString Path)
 	}
 }
 
-const FWordInfo* UWordPool::GetRandomWord() const
+TArray<const FWordInfo*> UWordPool::GetRandomWord(int32 Count) const
 {
-	if (WordList.Num() == 0)
+	TArray<const FWordInfo*> Candidate;
+	// Add all words into Candidate
+	for (int32 Index = 0; Index < WordList.Num(); ++Index)
 	{
-		return nullptr;
+		Candidate.AddUnique(&WordList[Index]);
 	}
 
-	const int32 WordIndex = FMath::RandRange(0, WordList.Num() - 1);
-	return &WordList[WordIndex];
+	if (WordList.Num() <= Count)
+	{
+		return Candidate;
+	}
+
+	TArray<const FWordInfo*> Result;
+	// Get random words
+	for (int32 i = 0; i < Count; ++i)
+	{
+		const int32 WordIndex = FMath::RandRange(0, Candidate.Num() - 1);
+
+		Result.AddUnique(Candidate[WordIndex]);
+		// Remove picked word from candidate
+		Candidate.RemoveAt(WordIndex);
+	}
+
+	return Result;
 }

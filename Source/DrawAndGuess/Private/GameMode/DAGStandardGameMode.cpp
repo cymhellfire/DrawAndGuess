@@ -20,6 +20,7 @@ ADAGStandardGameMode::ADAGStandardGameMode(const FObjectInitializer& ObjectIniti
 
 	CurrentGamePhase = EStandardGameModePhase::SGMP_Waiting;
 	DrawingTimePerRound = 30;
+	ChooseWordTimePerRound = 10;
 	MaxDrawingRounds = 3;
 	FinishedRound = 0;
 
@@ -39,12 +40,15 @@ void ADAGStandardGameMode::Tick(float DeltaSeconds)
 
 void ADAGStandardGameMode::ChooseWordByIndex(int32 Index)
 {
+	// Clear timer
+	GetWorldTimerManager().ClearTimer(ChooseWordTimerHandle);
+
 	if (Index < 0 || Index >= CandidateWords.Num())
 	{
 		return;
 	}
 
-	CurrentWord = &CandidateWords[Index];
+	CurrentWord = CandidateWords[Index];
 	OnWordChosen();
 }
 
@@ -126,12 +130,6 @@ void ADAGStandardGameMode::OnRoundStarted()
 {
 	CurrentPlayerId = GetPlayerIdByIndex(GetGameState<ADAGStandardGameState>()->GetCurrentPlayerIndex());
 
-	// Reset drawing remain time
-	if (ADAGStandardGameState* StandardGameState = GetGameState<ADAGStandardGameState>())
-	{
-		StandardGameState->SetRemainTime(DrawingTimePerRound);
-	}
-
 	SetNextPhase(SGMP_ChooseWord);
 }
 
@@ -145,31 +143,36 @@ void ADAGStandardGameMode::OnChooseWord()
 
 	// Get word for this round
 	CandidateWords.Empty();
-	int32 TryTime = 0;
-	while (true)
-	{
-		CandidateWords.AddUnique(*WordPool->GetRandomWord());
-
-		TryTime++;
-		if (CandidateWords.Num() >= 3 || TryTime > 100)
-		{
-			break;
-		}
-	}
+	CandidateWords = WordPool->GetRandomWord(3);
 
 	if (ADAGPlayerController* CurrentPlayerController = GetPlayerControllerById(CurrentPlayerId))
 	{
 		TArray<FString> CandidateWordStrings;
-		for (FWordInfo WordInfo : CandidateWords)
+		for (const FWordInfo* WordInfo : CandidateWords)
 		{
-			CandidateWordStrings.Add(WordInfo.Word);
+			CandidateWordStrings.Add(WordInfo->Word);
 		}
 		CurrentPlayerController->ClientReceiveCandidateWords(CandidateWordStrings);
 	}
+
+	// Reset choose word remain time
+	if (ADAGStandardGameState* StandardGameState = GetGameState<ADAGStandardGameState>())
+	{
+		StandardGameState->SetRemainTime(ChooseWordTimePerRound);
+	}
+
+	GetWorldTimerManager().SetTimer(ChooseWordTimerHandle, this, &ADAGStandardGameMode::OnChooseWordTimerTicked,
+		GetWorld()->GetWorldSettings()->GetEffectiveTimeDilation(), true);
 }
 
 void ADAGStandardGameMode::OnPlayerDrawing()
 {
+	// Reset drawing remain time
+	if (ADAGStandardGameState* StandardGameState = GetGameState<ADAGStandardGameState>())
+	{
+		StandardGameState->SetRemainTime(DrawingTimePerRound);
+	}
+
 	// Setup the drawing handle
 	GetWorldTimerManager().SetTimer(DrawingTimerHandle, this, &ADAGStandardGameMode::OnDrawingTimerTicked,
 		GetWorld()->GetWorldSettings()->GetEffectiveTimeDilation(), true);
@@ -295,6 +298,21 @@ void ADAGStandardGameMode::OnDrawingTimerTicked()
 	}
 }
 
+void ADAGStandardGameMode::OnChooseWordTimerTicked()
+{
+	// Decrease remaining time
+	if (ADAGStandardGameState* StandardGameState = GetGameState<ADAGStandardGameState>())
+	{
+		StandardGameState->SetRemainTime(StandardGameState->GetRemainTime() - 1);
+
+		// Select a random word if expired
+		if (StandardGameState->GetRemainTime() <= 0)
+		{
+			ChooseWordByIndex(FMath::RandRange(0, CandidateWords.Num() - 1));
+		}
+	}
+}
+
 void ADAGStandardGameMode::OnWordChosen()
 {
 	if (CurrentWord)
@@ -303,6 +321,11 @@ void ADAGStandardGameMode::OnWordChosen()
 		if (ADAGPlayerController* CurrentPlayerController = GetPlayerControllerById(CurrentPlayerId))
 		{
 			CurrentPlayerController->ClientReceiveWord(CurrentWord->Word);
+
+			if (ADAGStandardPlayerController* StandardPlayerController = Cast<ADAGStandardPlayerController>(CurrentPlayerController))
+			{
+				StandardPlayerController->ClientOnWordChosen();
+			}
 
 			// Notify other players the hint
 			for (ADAGPlayerController* PlayerController : PlayerControllerList)
