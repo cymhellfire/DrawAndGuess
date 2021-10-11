@@ -21,6 +21,8 @@ public:
 
 	const FWordInfo* GetRandomWord() const;
 
+	int32 GetWordCount() const { return WordList.Num(); }
+
 protected:
 
 	TArray<FWordInfo> WordList;

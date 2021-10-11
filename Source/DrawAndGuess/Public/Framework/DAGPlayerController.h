@@ -62,6 +62,9 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientReceiveHint(const FString& Hint);
 
+	UFUNCTION(Client, Reliable)
+	void ClientReceiveCandidateWords(const TArray<FString>& CandidateWords);
+
 	void ClearDrawingActions();
 
 	UFUNCTION(Exec)
@@ -77,6 +80,9 @@ protected:
 
 	UFUNCTION()
 	void OnRep_DrawingActionManager();
+
+	UFUNCTION(BlueprintImplementableEvent, Meta=(DisplayName="OnReceiveCandidateWords"))
+	void K2_OnReceiveCandidateWords(const TArray<FString>& CandidateWords);
 
 public:
 	UPROPERTY(BlueprintAssignable, Category="PlayerController")

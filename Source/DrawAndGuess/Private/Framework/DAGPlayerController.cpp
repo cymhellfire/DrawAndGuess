@@ -9,6 +9,7 @@
 #include "Framework/DAGGameUserSettings.h"
 #include "Framework/DAGPlayerState.h"
 #include "GameFramework/PlayerState.h"
+#include "GameMode/DAGStandardGameMode.h"
 #include "Pawns/DrawingBrush.h"
 
 void ADAGPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -185,6 +186,12 @@ void ADAGPlayerController::ClientReceiveWord_Implementation(const FString& Word)
 void ADAGPlayerController::ClientReceiveHint_Implementation(const FString& Hint)
 {
 	OnReceiveHint.Broadcast(Hint);
+}
+
+void ADAGPlayerController::ClientReceiveCandidateWords_Implementation(const TArray<FString>& CandidateWords)
+{
+	// Invoke blueprint function
+	K2_OnReceiveCandidateWords(CandidateWords);
 }
 
 void ADAGPlayerController::ClearDrawingActions()

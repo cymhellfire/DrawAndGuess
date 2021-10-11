@@ -16,6 +16,7 @@ enum EStandardGameModePhase
 	SGMP_Waiting,
 	SGMP_GameStart,
 	SGMP_RoundStart,
+	SGMP_ChooseWord,
 	SGMP_PlayerDrawing,
 	SGMP_RoundEnd,
 	SGMP_SwitchPlayer,
@@ -35,6 +36,8 @@ public:
 
 	virtual void Tick(float DeltaSeconds) override;
 
+	void ChooseWordByIndex(int32 Index);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -45,6 +48,8 @@ protected:
 	void OnGameStarted();
 
 	void OnRoundStarted();
+
+	void OnChooseWord();
 
 	void OnPlayerDrawing();
 
@@ -62,6 +67,8 @@ protected:
 
 	UFUNCTION()
 	void OnDrawingTimerTicked();
+
+	void OnWordChosen();
 
 	virtual void PreBroadcastChatMessage(ADAGPlayerController* SourcePlayer, FString& InMessage) override;
 
@@ -96,6 +103,8 @@ protected:
 	TArray<ADrawingCanvas*> CanvasList;
 
 	FTimerHandle DrawingTimerHandle;
+
+	TArray<FWordInfo> CandidateWords;
 
 	const FWordInfo* CurrentWord;
 };

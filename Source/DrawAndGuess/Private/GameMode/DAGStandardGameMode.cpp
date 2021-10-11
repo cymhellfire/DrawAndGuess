@@ -11,6 +11,7 @@
 #include "Framework/WordPool.h"
 #include "GameFramework/PlayerState.h"
 #include "GameMode/DAGStandardGameState.h"
+#include "GameMode/DAGStandardPlayerController.h"
 
 ADAGStandardGameMode::ADAGStandardGameMode(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -21,6 +22,8 @@ ADAGStandardGameMode::ADAGStandardGameMode(const FObjectInitializer& ObjectIniti
 	DrawingTimePerRound = 30;
 	MaxDrawingRounds = 3;
 	FinishedRound = 0;
+
+	PlayerControllerClass = ADAGStandardPlayerController::StaticClass();
 }
 
 void ADAGStandardGameMode::Tick(float DeltaSeconds)
@@ -32,6 +35,17 @@ void ADAGStandardGameMode::Tick(float DeltaSeconds)
 	{
 		SwitchToPhase(PendingGamePhase);
 	}
+}
+
+void ADAGStandardGameMode::ChooseWordByIndex(int32 Index)
+{
+	if (Index < 0 || Index >= CandidateWords.Num())
+	{
+		return;
+	}
+
+	CurrentWord = &CandidateWords[Index];
+	OnWordChosen();
 }
 
 void ADAGStandardGameMode::BeginPlay()
@@ -61,6 +75,9 @@ void ADAGStandardGameMode::SwitchToPhase(EStandardGameModePhase NewPhase)
 		break;
 	case SGMP_RoundStart:
 		OnRoundStarted();
+		break;
+	case SGMP_ChooseWord:
+		OnChooseWord();
 		break;
 	case SGMP_PlayerDrawing:
 		OnPlayerDrawing();
@@ -109,54 +126,45 @@ void ADAGStandardGameMode::OnRoundStarted()
 {
 	CurrentPlayerId = GetPlayerIdByIndex(GetGameState<ADAGStandardGameState>()->GetCurrentPlayerIndex());
 
-	// Enable player drawing function for all canvas
-	for (ADrawingCanvas* DrawingCanvas : CanvasList)
-	{
-		AllowPlayerDrawOnCanvas(CurrentPlayerId, DrawingCanvas);
-	}
-
 	// Reset drawing remain time
 	if (ADAGStandardGameState* StandardGameState = GetGameState<ADAGStandardGameState>())
 	{
 		StandardGameState->SetRemainTime(DrawingTimePerRound);
 	}
 
-	// Get word for this round
-	CurrentWord = WordPool->GetRandomWord();
-	if (CurrentWord)
+	SetNextPhase(SGMP_ChooseWord);
+}
+
+void ADAGStandardGameMode::OnChooseWord()
+{
+	if (WordPool == nullptr || WordPool->GetWordCount() == 0)
 	{
-		// Notify current player the word
-		if (ADAGPlayerController* CurrentPlayerController = GetPlayerControllerById(CurrentPlayerId))
-		{
-			CurrentPlayerController->ClientReceiveWord(CurrentWord->Word);
-
-			// Notify other players the hint
-			for (ADAGPlayerController* PlayerController : PlayerControllerList)
-			{
-				if (PlayerController == CurrentPlayerController)
-					continue;
-
-				PlayerController->ClientReceiveHint(FString::Printf(TEXT("%d个字"), CurrentWord->Word.Len()));
-			}
-
-			// Start the drawing state
-			if (ADAGPlayerState* CurrentPlayerState = CurrentPlayerController->GetPlayerState<ADAGPlayerState>())
-			{
-				CurrentPlayerState->SetGameState(EPlayerGameState::PGS_Drawing);
-			}
-		}
-
-		GuessedPlayerCount = 0;
-
-		UE_LOG(LogInit, Log, TEXT("[GameMode] Player %d round start."), CurrentPlayerId);
-
-		// Start drawing phase
-		SetNextPhase(SGMP_PlayerDrawing);
-	}
-	else
-	{
-		UE_LOG(LogInit, Error, TEXT("[GameMode] No valid word to guess."));
 		SetNextPhase(SGMP_GameFinish);
+		return;
+	}
+
+	// Get word for this round
+	CandidateWords.Empty();
+	int32 TryTime = 0;
+	while (true)
+	{
+		CandidateWords.AddUnique(*WordPool->GetRandomWord());
+
+		TryTime++;
+		if (CandidateWords.Num() >= 3 || TryTime > 100)
+		{
+			break;
+		}
+	}
+
+	if (ADAGPlayerController* CurrentPlayerController = GetPlayerControllerById(CurrentPlayerId))
+	{
+		TArray<FString> CandidateWordStrings;
+		for (FWordInfo WordInfo : CandidateWords)
+		{
+			CandidateWordStrings.Add(WordInfo.Word);
+		}
+		CurrentPlayerController->ClientReceiveCandidateWords(CandidateWordStrings);
 	}
 }
 
@@ -284,6 +292,51 @@ void ADAGStandardGameMode::OnDrawingTimerTicked()
 			// Enter round finish phase
 			SetNextPhase(SGMP_RoundEnd);
 		}
+	}
+}
+
+void ADAGStandardGameMode::OnWordChosen()
+{
+	if (CurrentWord)
+	{
+		// Notify current player the word
+		if (ADAGPlayerController* CurrentPlayerController = GetPlayerControllerById(CurrentPlayerId))
+		{
+			CurrentPlayerController->ClientReceiveWord(CurrentWord->Word);
+
+			// Notify other players the hint
+			for (ADAGPlayerController* PlayerController : PlayerControllerList)
+			{
+				if (PlayerController == CurrentPlayerController)
+					continue;
+
+				PlayerController->ClientReceiveHint(FString::Printf(TEXT("%d个字"), CurrentWord->Word.Len()));
+			}
+
+			// Start the drawing state
+			if (ADAGPlayerState* CurrentPlayerState = CurrentPlayerController->GetPlayerState<ADAGPlayerState>())
+			{
+				CurrentPlayerState->SetGameState(EPlayerGameState::PGS_Drawing);
+			}
+		}
+
+		// Enable player drawing function for all canvas
+		for (ADrawingCanvas* DrawingCanvas : CanvasList)
+		{
+			AllowPlayerDrawOnCanvas(CurrentPlayerId, DrawingCanvas);
+		}
+
+		GuessedPlayerCount = 0;
+
+		UE_LOG(LogInit, Log, TEXT("[GameMode] Player %d round start."), CurrentPlayerId);
+
+		// Start drawing phase
+		SetNextPhase(SGMP_PlayerDrawing);
+	}
+	else
+	{
+		UE_LOG(LogInit, Error, TEXT("[GameMode] No valid word to guess."));
+		SetNextPhase(SGMP_GameFinish);
 	}
 }
 
