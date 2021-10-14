@@ -15,6 +15,7 @@ void ADAGPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 
 	DOREPLIFETIME_WITH_PARAMS(ADAGPlayerState, LobbyState, SharedParams);
 	DOREPLIFETIME_WITH_PARAMS(ADAGPlayerState, GameState, SharedParams);
+	DOREPLIFETIME_WITH_PARAMS(ADAGPlayerState, DrawScore, SharedParams);
 }
 
 void ADAGPlayerState::SetLobbyState_Implementation(EPlayerLobbyState NewLobbyState)
@@ -55,6 +56,15 @@ void ADAGPlayerState::OnRep_PlayerName()
 
 	// Notify the info changes
 	OnPlayerLobbyInfoChanged.Broadcast();
+}
+
+void ADAGPlayerState::AddDrawScore(int32 DeltaScore)
+{
+	if (GetNetMode() == NM_Client)
+		return;
+
+	DrawScore += DeltaScore;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ADAGPlayerState, DrawScore, this);
 }
 
 void ADAGPlayerState::OnRep_LobbyState()

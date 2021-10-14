@@ -81,6 +81,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="GameMode")
 	FString MaskStringForWord;
 
+	UPROPERTY(EditDefaultsOnly, Category="GameMode")
+	UCurveFloat* DrawerScoreCurve;
+
+	UPROPERTY(EditDefaultsOnly, Category="GameMode")
+	UCurveFloat* GuesserScoreCurve;
+
 	UPROPERTY(VisibleAnywhere)
 	TEnumAsByte<EStandardGameModePhase> CurrentGamePhase;
 

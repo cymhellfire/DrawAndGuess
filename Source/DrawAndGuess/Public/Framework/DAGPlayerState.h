@@ -38,6 +38,11 @@ public:
 
 	virtual void OnRep_PlayerName() override;
 
+	void AddDrawScore(int32 DeltaScore);
+
+	UFUNCTION(BlueprintCallable, Category="PlayerState")
+	int32 GetDrawScore() const { return DrawScore; }
+
 protected:
 	UFUNCTION()
 	void OnRep_LobbyState();
@@ -50,4 +55,7 @@ protected:
 
 	UPROPERTY(ReplicatedUsing=OnRep_GameState)
 	EPlayerGameState GameState;
+
+	UPROPERTY(Replicated)
+	int32 DrawScore;
 };

@@ -209,6 +209,14 @@ void ADAGPlayerController::ClearDrawingActions()
 	}
 }
 
+void ADAGPlayerController::ClientReceiveLeaderboard_Implementation(const TArray<ADAGPlayerState*>& Leaderboard)
+{
+	for (const ADAGPlayerState* DAGPlayerState : Leaderboard)
+	{
+		UE_LOG(LogInit, Log, TEXT("[Leaderboard] Player %s: %d"), *DAGPlayerState->GetPlayerName(), DAGPlayerState->GetDrawScore());
+	}
+}
+
 void ADAGPlayerController::ExecCheckAllPlayerId()
 {
 	if (AGameStateBase* MyGameState = GetWorld()->GetGameState())

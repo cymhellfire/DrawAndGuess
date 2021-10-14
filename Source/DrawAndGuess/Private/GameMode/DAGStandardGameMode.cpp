@@ -242,6 +242,23 @@ void ADAGStandardGameMode::OnSwitchPlayer()
 
 void ADAGStandardGameMode::OnGameFinished()
 {
+	TArray<ADAGPlayerState*> Leaderboard;
+	for (ADAGPlayerController* PlayerController : PlayerControllerList)
+	{
+		if (ADAGPlayerState* MyPlayerState = PlayerController->GetPlayerState<ADAGPlayerState>())
+		{
+			Leaderboard.Add(MyPlayerState);
+		}
+	}
+	Leaderboard.Sort([](const ADAGPlayerState& PlayerA, const ADAGPlayerState& PlayerB)
+	{
+		return PlayerA.GetScore() > PlayerB.GetScore();
+	});
+
+	for (ADAGPlayerController* PlayerController : PlayerControllerList)
+	{
+		PlayerController->ClientReceiveLeaderboard(Leaderboard);
+	}
 	UE_LOG(LogInit, Log, TEXT("[GameMode] Game finished."));
 }
 
@@ -275,6 +292,17 @@ void ADAGStandardGameMode::OnWordGuessed(ADAGPlayerController* PlayerController)
 {
 	GuessedPlayerCount++;
 
+	// Increase player score
+	if (ADAGPlayerState* GuesserPlayerState = PlayerController->GetPlayerState<ADAGPlayerState>())
+	{
+		GuesserPlayerState->AddDrawScore(GetGameState<ADAGStandardGameState>()->GetGuesserGainScore());
+	}
+
+	if (ADAGPlayerState* DrawerPlayerState = GetPlayerControllerById(CurrentPlayerId)->GetPlayerState<ADAGPlayerState>())
+	{
+		DrawerPlayerState->AddDrawScore(GetGameState<ADAGStandardGameState>()->GetDrawerGainScore());
+	}
+
 	// Check if all players guessed the word (There should be only one player drawing for now.)
 	if (GuessedPlayerCount == PlayerControllerList.Num() - 1)
 	{
@@ -288,6 +316,13 @@ void ADAGStandardGameMode::OnDrawingTimerTicked()
 	if (ADAGStandardGameState* StandardGameState = GetGameState<ADAGStandardGameState>())
 	{
 		StandardGameState->SetRemainTime(StandardGameState->GetRemainTime() - 1);
+
+		// Calculate the gain score
+		float TimeRatio = StandardGameState->GetRemainTime() / (float)DrawingTimePerRound;
+		int32 Score = FMath::CeilToInt(DrawerScoreCurve->GetFloatValue(TimeRatio));
+		StandardGameState->SetDrawerGainScore(Score);
+		Score = FMath::CeilToInt(GuesserScoreCurve->GetFloatValue(TimeRatio));
+		StandardGameState->SetGuesserGainScore(Score);
 
 		// Enter next phase if no remaining time left
 		if (StandardGameState->GetRemainTime() <= 0)

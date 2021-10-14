@@ -28,12 +28,26 @@ public:
 	UFUNCTION(BlueprintCallable, Category="GameState")
 	int32 GetCurrentPlayerIndex() const { return CurrentPlayerIndex; }
 
+	void SetDrawerGainScore(int32 NewScore);
+
+	int32 GetDrawerGainScore() const { return DrawerGainScore; }
+
+	void SetGuesserGainScore(int32 NewScore);
+
+	int32 GetGuesserGainScore() const { return GuesserGainScore; }
+
 protected:
 	UFUNCTION()
 	void OnRep_DrawingRemainTime();
 
 	UFUNCTION()
 	void OnRep_CurrentPlayerIndex();
+
+	UFUNCTION()
+	void OnRep_DrawerGainScore();
+
+	UFUNCTION()
+	void OnRep_GuesserGainScore();
 
 public:
 	UPROPERTY(BlueprintAssignable, Category="GameState")
@@ -42,10 +56,22 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="GameState")
 	FOnCurrentPlayerIndexChangedSignature OnCurrentPlayerIndexChanged;
 
+	UPROPERTY(BlueprintAssignable, Category="GameState")
+	FOnCurrentPlayerIndexChangedSignature OnDrawerGainScoreChanged;
+
+	UPROPERTY(BlueprintAssignable, Category="GameState")
+	FOnCurrentPlayerIndexChangedSignature OnGuesserGainScoreChanged;
+
 protected:
 	UPROPERTY(ReplicatedUsing=OnRep_DrawingRemainTime)
 	int32 DrawingRemainTime;
 	
 	UPROPERTY(ReplicatedUsing=OnRep_CurrentPlayerIndex)
 	int32 CurrentPlayerIndex;
+
+	UPROPERTY(ReplicatedUsing=OnRep_DrawerGainScore)
+	int32 DrawerGainScore;
+
+	UPROPERTY(ReplicatedUsing=OnRep_GuesserGainScore)
+	int32 GuesserGainScore;
 };

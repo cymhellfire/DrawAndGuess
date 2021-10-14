@@ -67,6 +67,9 @@ public:
 
 	void ClearDrawingActions();
 
+	UFUNCTION(Client, Reliable)
+	void ClientReceiveLeaderboard(const TArray<class ADAGPlayerState*>& Leaderboard);
+
 	UFUNCTION(Exec)
 	void ExecCheckAllPlayerId();
 
