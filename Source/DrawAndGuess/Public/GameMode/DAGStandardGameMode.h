@@ -114,6 +114,8 @@ protected:
 
 	int32 GuessedPlayerCount;
 
+	int32 CandidateWordCount;
+
 	TArray<ADrawingCanvas*> CanvasList;
 
 	FTimerHandle DrawingTimerHandle;

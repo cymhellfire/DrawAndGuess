@@ -8,6 +8,9 @@ UDAGGameUserSettings::UDAGGameUserSettings(const FObjectInitializer& ObjectIniti
 {
 	PencilInterpolationThreshold = 0.1f;
 	PlayerName = TEXT("NewPlayer");
+	DrawingTimePerRound = 60;
+	MaxDrawingRound = 3;
+	CandidateWordCount = 3;
 }
 
 void UDAGGameUserSettings::SetToDefaults()
@@ -55,6 +58,21 @@ FString UDAGGameUserSettings::GetWordPoolFileFolder() const
 	}
 
 	return "";
+}
+
+void UDAGGameUserSettings::SetDrawingTimePerRound(int32 NewTime)
+{
+	DrawingTimePerRound = NewTime;
+}
+
+void UDAGGameUserSettings::SetCandidateWordCount(int32 NewCount)
+{
+	CandidateWordCount = NewCount;
+}
+
+void UDAGGameUserSettings::SetMaxDrawingRound(int32 NewCount)
+{
+	MaxDrawingRound = NewCount;
 }
 
 UDAGGameUserSettings* UDAGGameUserSettings::GetDAGGameUserSettings()

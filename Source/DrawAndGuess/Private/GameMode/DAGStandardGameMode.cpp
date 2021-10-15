@@ -128,7 +128,7 @@ void ADAGStandardGameMode::OnGameStarted()
 		StandardGameState->SetCurrentPlayerIndex(0);
 	}
 
-	// Load the word pool
+	// Load game settings
 	if (UDAGGameInstance* GameInstance = Cast<UDAGGameInstance>(GetGameInstance()))
 	{
 		if (WordPool == nullptr)
@@ -138,7 +138,12 @@ void ADAGStandardGameMode::OnGameStarted()
 
 		if (UDAGGameUserSettings* UserSettings = UDAGGameUserSettings::GetDAGGameUserSettings())
 		{
+			// Load the word pool
 			WordPool->LoadFromFile(UserSettings->GetWordPoolFilePath());
+
+			MaxDrawingRounds = UserSettings->GetMaxDrawingRound();
+			DrawingTimePerRound = UserSettings->GetDrawingTimePerRound();
+			CandidateWordCount = UserSettings->GetCandidateWordCount();
 		}
 	}
 
@@ -163,7 +168,7 @@ void ADAGStandardGameMode::OnChooseWord()
 
 	// Get word for this round
 	CandidateWords.Empty();
-	CandidateWords = WordPool->GetRandomWord(3);
+	CandidateWords = WordPool->GetRandomWord(CandidateWordCount);
 
 	if (ADAGPlayerController* CurrentPlayerController = GetPlayerControllerById(CurrentPlayerId))
 	{

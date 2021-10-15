@@ -42,6 +42,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
 	FString GetWordPoolFileFolder() const;
 
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
+	void SetDrawingTimePerRound(int32 NewTime);
+
+	int32 GetDrawingTimePerRound() const { return DrawingTimePerRound; }
+
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
+	void SetCandidateWordCount(int32 NewCount);
+
+	int32 GetCandidateWordCount() const { return CandidateWordCount; }
+
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
+	void SetMaxDrawingRound(int32 NewCount);
+
+	int32 GetMaxDrawingRound() const { return MaxDrawingRound; }
+
 	UFUNCTION(BlueprintCallable, Category="GameInstance")
 	static UDAGGameUserSettings* GetDAGGameUserSettings();
 
@@ -57,4 +72,13 @@ protected:
 
 	UPROPERTY(config)
 	FString WordPoolFilePath;
+
+	UPROPERTY(config)
+	int32 DrawingTimePerRound;
+
+	UPROPERTY(config)
+	int32 CandidateWordCount;
+
+	UPROPERTY(config)
+	int32 MaxDrawingRound;
 };
