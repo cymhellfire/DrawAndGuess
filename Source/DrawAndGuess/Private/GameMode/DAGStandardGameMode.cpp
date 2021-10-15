@@ -52,6 +52,26 @@ void ADAGStandardGameMode::ChooseWordByIndex(int32 Index)
 	OnWordChosen();
 }
 
+void ADAGStandardGameMode::RestartGame()
+{
+	for (ADAGPlayerController* PlayerController : PlayerControllerList)
+	{
+		// Notify all players that game restarted
+		PlayerController->ClientReceiveGameRestart();
+
+		// Clear all player's drawing score
+		if (ADAGPlayerState* PlayerState = PlayerController->GetPlayerState<ADAGPlayerState>())
+		{
+			PlayerState->SetDrawScore(0);
+		}
+	}
+
+	FinishedRound = 0;
+
+	// Set game phase to game start
+	SetNextPhase(SGMP_GameStart);
+}
+
 void ADAGStandardGameMode::BeginPlay()
 {
 	Super::BeginPlay();
@@ -215,18 +235,18 @@ void ADAGStandardGameMode::OnSwitchPlayer()
 		if (CurrentPlayerIndex >= PlayerControllerList.Num())
 		{
 			// All players finished this round
+			// Reset the index to start
+			CurrentPlayerIndex = 0;
+
+			// Increase finished round counter
+			FinishedRound++;
+
 			if (FinishedRound >= MaxDrawingRounds)
 			{
 				// Finish the game
 				SetNextPhase(SGMP_GameFinish);
 				return;
 			}
-
-			// Reset the index to start
-			CurrentPlayerIndex = 0;
-
-			// Increase finished round counter
-			FinishedRound++;
 		}
 
 		StandardGameState->SetCurrentPlayerIndex(CurrentPlayerIndex);

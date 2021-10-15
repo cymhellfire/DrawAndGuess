@@ -70,6 +70,9 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientReceiveLeaderboard(const TArray<class ADAGPlayerState*>& Leaderboard);
 
+	UFUNCTION(Client, Reliable)
+	void ClientReceiveGameRestart();
+
 	UFUNCTION(Exec)
 	void ExecCheckAllPlayerId();
 
@@ -86,6 +89,12 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Meta=(DisplayName="OnReceiveCandidateWords"))
 	void K2_OnReceiveCandidateWords(const TArray<FString>& CandidateWords);
+
+	UFUNCTION(BlueprintImplementableEvent, Meta=(DisplayName="OnReceiveLeaderboardData"))
+	void K2_OnReceiveLeaderboardData(const TArray<FString>& NameArray, const TArray<int32>& ScoreArray);
+
+	UFUNCTION(BlueprintImplementableEvent, Meta=(DisplayName="OnReceiveGameRestart"))
+	void K2_OnReceiveGameRestart();
 
 public:
 	UPROPERTY(BlueprintAssignable, Category="PlayerController")

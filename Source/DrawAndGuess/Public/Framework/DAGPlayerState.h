@@ -40,6 +40,8 @@ public:
 
 	void AddDrawScore(int32 DeltaScore);
 
+	void SetDrawScore(int32 NewScore);
+
 	UFUNCTION(BlueprintCallable, Category="PlayerState")
 	int32 GetDrawScore() const { return DrawScore; }
 

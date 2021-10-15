@@ -38,6 +38,8 @@ public:
 
 	void ChooseWordByIndex(int32 Index);
 
+	virtual void RestartGame() override;
+
 protected:
 	virtual void BeginPlay() override;
 

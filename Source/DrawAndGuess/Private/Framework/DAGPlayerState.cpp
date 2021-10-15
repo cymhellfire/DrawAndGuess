@@ -67,6 +67,18 @@ void ADAGPlayerState::AddDrawScore(int32 DeltaScore)
 	MARK_PROPERTY_DIRTY_FROM_NAME(ADAGPlayerState, DrawScore, this);
 }
 
+void ADAGPlayerState::SetDrawScore(int32 NewScore)
+{
+	if (GetNetMode() == NM_Client)
+		return;
+
+	if (DrawScore != NewScore)
+	{
+		DrawScore = NewScore;
+		MARK_PROPERTY_DIRTY_FROM_NAME(ADAGPlayerState, DrawScore, this);
+	}
+}
+
 void ADAGPlayerState::OnRep_LobbyState()
 {
 	// Broadcast the event

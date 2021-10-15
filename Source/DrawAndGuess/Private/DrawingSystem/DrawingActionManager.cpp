@@ -2,6 +2,7 @@
 #include "Actors/DrawingCanvas.h"
 #include "DrawingSystem/DrawingActionBase.h"
 #include "DrawingSystem/DrawingAction_Box.h"
+#include "DrawingSystem/DrawingAction_Circle.h"
 #include "DrawingSystem/DrawingAction_Line.h"
 #include "DrawingSystem/DrawingAction_Pencil.h"
 #include "Engine/ActorChannel.h"
@@ -27,6 +28,9 @@ UDrawingActionBase* ADrawingActionManager::CreateDrawingAction(EDrawingActionTyp
 		break;
 	case DAT_Box:
 		NewAction = NewObject<UDrawingAction_Box>(this);
+		break;
+	case DAT_Circle:
+		NewAction = NewObject<UDrawingAction_Circle>(this);
 		break;
 	default: ;
 	}

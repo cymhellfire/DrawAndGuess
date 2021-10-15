@@ -33,6 +33,9 @@ public:
 
 	virtual void MarkPlayerAsReady(ADAGPlayerController* ReadyPlayer);
 
+	UFUNCTION(BlueprintCallable, Category="GameMode")
+	virtual void RestartGame() {}
+
 protected:
 
 	ADAGPlayerController* GetPlayerControllerById(int32 PlayerId);
