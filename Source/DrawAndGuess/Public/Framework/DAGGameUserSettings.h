@@ -43,6 +43,9 @@ public:
 	FString GetWordPoolFileFolder() const;
 
 	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
+	FString GetWordPoolFileName() const;
+
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
 	void SetDrawingTimePerRound(int32 NewTime);
 
 	UFUNCTION(BlueprintCallable, Category="GameUserSettings")

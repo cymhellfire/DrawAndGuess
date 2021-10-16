@@ -7,6 +7,7 @@
 #include "DAGLobbyGameState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameSettingIntPropertyChanged, int32, NewValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameSettingStringPropertyChanged, const FString&, NewValue);
 
 /**
  * 
@@ -26,6 +27,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category=GameState)
 	FOnGameSettingIntPropertyChanged OnCandidateWordCountChanged;
 
+	UPROPERTY(BlueprintAssignable, Category=GameState)
+	FOnGameSettingStringPropertyChanged OnWordPoolFileNameChanged;
+
 	UFUNCTION(BlueprintCallable, Category=GameState)
 	void SetMaxDrawRound(int32 NewValue);
 
@@ -44,6 +48,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category=GameState)
 	int32 GetCandidateWordCount() const { return CandidateWordCount; }
 
+	UFUNCTION(BlueprintCallable, Category=GameState)
+	void SetWordPoolFileName(FString NewValue);
+
+	UFUNCTION(BlueprintCallable, Category=GameState)
+	FString GetWordPoolFileName() const { return WordPoolFileName; }
+
 protected:
 	UFUNCTION()
 	void OnRep_DrawingTimePerRound();
@@ -53,6 +63,9 @@ protected:
 
 	UFUNCTION()
 	void OnRep_CandidateWordCount();
+
+	UFUNCTION()
+	void OnRep_WordPoolFileName();
 
 protected:
 
@@ -65,4 +78,7 @@ protected:
 
 	UPROPERTY(ReplicatedUsing=OnRep_CandidateWordCount)
 	int32 CandidateWordCount;
+
+	UPROPERTY(ReplicatedUsing=OnRep_WordPoolFileName)
+	FString WordPoolFileName;
 };

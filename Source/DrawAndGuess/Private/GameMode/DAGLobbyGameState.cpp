@@ -16,6 +16,7 @@ void ADAGLobbyGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME_WITH_PARAMS(ADAGLobbyGameState, DrawingTimePerRound, SharedParam);
 	DOREPLIFETIME_WITH_PARAMS(ADAGLobbyGameState, MaxDrawRound, SharedParam);
 	DOREPLIFETIME_WITH_PARAMS(ADAGLobbyGameState, CandidateWordCount, SharedParam);
+	DOREPLIFETIME_WITH_PARAMS(ADAGLobbyGameState, WordPoolFileName, SharedParam);
 }
 
 void ADAGLobbyGameState::SetMaxDrawRound(int32 NewValue)
@@ -60,6 +61,20 @@ void ADAGLobbyGameState::SetCandidateWordCount(int32 NewValue)
 	}
 }
 
+void ADAGLobbyGameState::SetWordPoolFileName(FString NewValue)
+{
+	if (GetNetMode() == NM_Client)
+		return;
+
+	if (NewValue != WordPoolFileName)
+	{
+		WordPoolFileName = NewValue;
+		MARK_PROPERTY_DIRTY_FROM_NAME(ADAGLobbyGameState, WordPoolFileName, this);
+
+		OnRep_WordPoolFileName();
+	}
+}
+
 void ADAGLobbyGameState::OnRep_DrawingTimePerRound()
 {
 	OnDrawingTimePerRoundChanged.Broadcast(DrawingTimePerRound);
@@ -73,4 +88,9 @@ void ADAGLobbyGameState::OnRep_MaxDrawRound()
 void ADAGLobbyGameState::OnRep_CandidateWordCount()
 {
 	OnCandidateWordCountChanged.Broadcast(CandidateWordCount);
+}
+
+void ADAGLobbyGameState::OnRep_WordPoolFileName()
+{
+	OnWordPoolFileNameChanged.Broadcast(WordPoolFileName);
 }

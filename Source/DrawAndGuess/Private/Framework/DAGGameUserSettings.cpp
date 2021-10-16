@@ -60,6 +60,20 @@ FString UDAGGameUserSettings::GetWordPoolFileFolder() const
 	return "";
 }
 
+FString UDAGGameUserSettings::GetWordPoolFileName() const
+{
+	if (!WordPoolFilePath.IsEmpty())
+	{
+		int32 CharIndex = -1;
+		if (WordPoolFilePath.FindLastChar('/', CharIndex))
+		{
+			return WordPoolFilePath.Mid(CharIndex + 1, WordPoolFilePath.Len() - CharIndex - 1);
+		}
+	}
+
+	return "";
+}
+
 void UDAGGameUserSettings::SetDrawingTimePerRound(int32 NewTime)
 {
 	DrawingTimePerRound = NewTime;
