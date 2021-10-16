@@ -209,18 +209,8 @@ void ADAGPlayerController::ClearDrawingActions()
 	}
 }
 
-void ADAGPlayerController::ClientReceiveLeaderboard_Implementation(const TArray<ADAGPlayerState*>& Leaderboard)
+void ADAGPlayerController::ClientReceiveLeaderboard_Implementation(const TArray<FString>& NameArray, const TArray<int32>& ScoreArray)
 {
-	TArray<FString> NameArray;
-	TArray<int32> ScoreArray;
-	for (const ADAGPlayerState* DAGPlayerState : Leaderboard)
-	{
-		UE_LOG(LogInit, Log, TEXT("[Leaderboard] Player %s: %d"), *DAGPlayerState->GetPlayerName(), DAGPlayerState->GetDrawScore());
-
-		NameArray.Add(DAGPlayerState->GetPlayerName());
-		ScoreArray.Add(DAGPlayerState->GetDrawScore());
-	}
-
 	// Pass the data to blueprint
 	K2_OnReceiveLeaderboardData(NameArray, ScoreArray);
 }

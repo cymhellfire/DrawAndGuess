@@ -49,7 +49,7 @@ struct FDrawingInputEvent
 	UPROPERTY()
 	TEnumAsByte<EDrawingInputType> InputType;
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 	ADrawingCanvas* Canvas;
 };
 

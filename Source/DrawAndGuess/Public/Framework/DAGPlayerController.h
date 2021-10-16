@@ -68,7 +68,7 @@ public:
 	void ClearDrawingActions();
 
 	UFUNCTION(Client, Reliable)
-	void ClientReceiveLeaderboard(const TArray<class ADAGPlayerState*>& Leaderboard);
+	void ClientReceiveLeaderboard(const TArray<FString>& NameArray, const TArray<int32>& ScoreArray);
 
 	UFUNCTION(Client, Reliable)
 	void ClientReceiveGameRestart();

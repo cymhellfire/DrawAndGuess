@@ -45,16 +45,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
 	void SetDrawingTimePerRound(int32 NewTime);
 
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
 	int32 GetDrawingTimePerRound() const { return DrawingTimePerRound; }
 
 	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
 	void SetCandidateWordCount(int32 NewCount);
 
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
 	int32 GetCandidateWordCount() const { return CandidateWordCount; }
 
 	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
 	void SetMaxDrawingRound(int32 NewCount);
 
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
 	int32 GetMaxDrawingRound() const { return MaxDrawingRound; }
 
 	UFUNCTION(BlueprintCallable, Category="GameInstance")

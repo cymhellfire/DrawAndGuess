@@ -142,8 +142,11 @@ void ADAGStandardGameMode::OnGameStarted()
 			WordPool->LoadFromFile(UserSettings->GetWordPoolFilePath());
 
 			MaxDrawingRounds = UserSettings->GetMaxDrawingRound();
+			UE_LOG(LogInit, Log, TEXT("[GameMode] Set MaxDrawingRound to %d"), MaxDrawingRounds);
 			DrawingTimePerRound = UserSettings->GetDrawingTimePerRound();
+			UE_LOG(LogInit, Log, TEXT("[GameMode] Set DrawingTimePerRound to %d"), DrawingTimePerRound);
 			CandidateWordCount = UserSettings->GetCandidateWordCount();
+			UE_LOG(LogInit, Log, TEXT("[GameMode] Set CandidateWordCount to %d"), CandidateWordCount);
 		}
 	}
 
@@ -277,12 +280,21 @@ void ADAGStandardGameMode::OnGameFinished()
 	}
 	Leaderboard.Sort([](const ADAGPlayerState& PlayerA, const ADAGPlayerState& PlayerB)
 	{
-		return PlayerA.GetScore() > PlayerB.GetScore();
+		return PlayerA.GetDrawScore() > PlayerB.GetDrawScore();
 	});
+
+	TArray<FString> NameArray;
+	TArray<int32> ScoreArray;
+
+	for (ADAGPlayerState* PlayerState : Leaderboard)
+	{
+		NameArray.Add(PlayerState->GetPlayerName());
+		ScoreArray.Add(PlayerState->GetDrawScore());
+	}
 
 	for (ADAGPlayerController* PlayerController : PlayerControllerList)
 	{
-		PlayerController->ClientReceiveLeaderboard(Leaderboard);
+		PlayerController->ClientReceiveLeaderboard(NameArray, ScoreArray);
 	}
 	UE_LOG(LogInit, Log, TEXT("[GameMode] Game finished."));
 }
