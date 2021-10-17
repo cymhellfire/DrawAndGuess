@@ -12,6 +12,7 @@ enum EDrawingActionType
 	DAT_Line,
 	DAT_Box,
 	DAT_Circle,
+	DAT_Fill,
 };
 
 UENUM(BlueprintType)
