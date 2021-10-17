@@ -168,6 +168,11 @@ void ADAGStandardGameMode::OnRoundStarted()
 		}
 	}
 
+	if (ADAGGameStateBase* MyGameState = GetGameState<ADAGGameStateBase>())
+	{
+		MyGameState->ClearDrawerName();
+	}
+
 	SetNextPhase(SGMP_ChooseWord);
 }
 
@@ -236,20 +241,13 @@ void ADAGStandardGameMode::OnRoundEnded()
 		}
 	}
 
-	if (GuessedPlayerCount < PlayerControllerList.Num() - 1)
-	{
-		// Setup a timer before switch player if there is player not get correct answer
-		GetWorldTimerManager().SetTimer(RoundEndTimerHandle, this, &ADAGStandardGameMode::OnRoundEndTimerExpired, 5);
+	// Setup a timer before switch player if there is player not get correct answer
+	GetWorldTimerManager().SetTimer(RoundEndTimerHandle, this, &ADAGStandardGameMode::OnRoundEndTimerExpired, 5);
 
-		// Show all players the correct answer
-		for (ADAGPlayerController* PlayerController : PlayerControllerList)
-		{
-			PlayerController->ClientReceiveCorrectWord(CurrentWord->Word);
-		}
-	}
-	else
+	// Show all players the correct answer
+	for (ADAGPlayerController* PlayerController : PlayerControllerList)
 	{
-		SetNextPhase(SGMP_SwitchPlayer);
+		PlayerController->ClientReceiveCorrectWord(CurrentWord->Word);
 	}
 }
 

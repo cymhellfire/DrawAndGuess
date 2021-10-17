@@ -126,6 +126,12 @@ void ADAGGameModeBase::AllowPlayerDrawOnCanvas(int32 PlayerId, ADrawingCanvas* T
 	if (TargetPlayer)
 	{
 		TargetPlayer->MulticastAddAcceptCanvas(TargetCanvas);
+
+		// Record drawer name
+		if (ADAGGameStateBase* MyGameState = GetGameState<ADAGGameStateBase>())
+		{
+			MyGameState->AddDrawerName(TargetPlayer->GetPlayerState<APlayerState>()->GetPlayerName());
+		}
 	}
 }
 

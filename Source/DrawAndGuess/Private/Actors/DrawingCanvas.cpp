@@ -52,7 +52,8 @@ void ADrawingCanvas::BeginPlay()
 		CanvasRenderTarget->RenderTargetFormat = CanvasSetting.RenderTargetFormat;
 		CanvasRenderTarget->ClearColor = CanvasSetting.ClearColor;
 		CanvasRenderTarget->bAutoGenerateMips = false;
-		CanvasRenderTarget->InitAutoFormat(CanvasSetting.Width, CanvasSetting.Height);
+		// Use Pixel format for export jpg files
+		CanvasRenderTarget->InitCustomFormat(CanvasSetting.Width, CanvasSetting.Height, EPixelFormat::PF_B8G8R8A8, false);
 		CanvasRenderTarget->UpdateResourceImmediate(true);
 
 		// Create preview render target

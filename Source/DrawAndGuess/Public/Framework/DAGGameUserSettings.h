@@ -63,6 +63,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
 	int32 GetMaxDrawingRound() const { return MaxDrawingRound; }
 
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
+	void SetScreenshotSavePath(FString NewPath);
+
+	UFUNCTION(BlueprintCallable, Category="GameUserSettings")
+	FString GetScreenshotSavePath() const;
+
+	virtual void PostInitProperties() override;
+
 	UFUNCTION(BlueprintCallable, Category="GameInstance")
 	static UDAGGameUserSettings* GetDAGGameUserSettings();
 
@@ -78,6 +86,9 @@ protected:
 
 	UPROPERTY(config)
 	FString WordPoolFilePath;
+
+	UPROPERTY(config)
+	FString ScreenshotSavePath;
 
 	UPROPERTY(config)
 	int32 DrawingTimePerRound;

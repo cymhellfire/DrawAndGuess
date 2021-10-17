@@ -23,4 +23,16 @@ public:
 	void FinishGameAndReturnToMainMenu();
 
 	FString GetUniquePlayerName(FString PlayerName);
+
+	UFUNCTION(BlueprintCallable, Category="GameState")
+	FString GetCurrentDrawerName() const { return CurrentDrawerName; }
+
+	void AddDrawerName(FString DrawerName);
+
+	void ClearDrawerName();
+
+protected:
+
+	UPROPERTY(Replicated)
+	FString CurrentDrawerName;
 };

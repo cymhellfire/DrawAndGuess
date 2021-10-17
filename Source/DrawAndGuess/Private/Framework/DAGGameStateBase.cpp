@@ -3,7 +3,18 @@
 #include "Framework/DAGGameModeBase.h"
 #include "Framework/DAGPlayerController.h"
 #include "GameFramework/PlayerState.h"
+#include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
+void ADAGGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	FDoRepLifetimeParams SharedParam;
+	SharedParam.bIsPushBased = true;
+
+	DOREPLIFETIME_WITH_PARAMS(ADAGGameStateBase, CurrentDrawerName, SharedParam);
+}
 
 void ADAGGameStateBase::AddPlayerState(APlayerState* PlayerState)
 {
@@ -73,4 +84,25 @@ FString ADAGGameStateBase::GetUniquePlayerName(FString PlayerName)
 	}
 
 	return PlayerName;
+}
+
+void ADAGGameStateBase::AddDrawerName(FString DrawerName)
+{
+	if (CurrentDrawerName.Len() == 0)
+	{
+		CurrentDrawerName = DrawerName;
+	}
+	else
+	{
+		CurrentDrawerName.Appendf(TEXT("&%s"), *DrawerName);
+	}
+
+	MARK_PROPERTY_DIRTY_FROM_NAME(ADAGGameStateBase, CurrentDrawerName, this);
+}
+
+void ADAGGameStateBase::ClearDrawerName()
+{
+	CurrentDrawerName = "";
+
+	MARK_PROPERTY_DIRTY_FROM_NAME(ADAGGameStateBase, CurrentDrawerName, this);
 }

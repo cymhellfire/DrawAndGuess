@@ -11,6 +11,12 @@ UDAGGameUserSettings::UDAGGameUserSettings(const FObjectInitializer& ObjectIniti
 	DrawingTimePerRound = 60;
 	MaxDrawingRound = 3;
 	CandidateWordCount = 3;
+
+#if WITH_EDITOR
+	ScreenshotSavePath = FString::Printf(TEXT("%s/Screenshots"), *FPaths::ProjectSavedDir());
+#else
+	ScreenshotSavePath = FString::Printf(TEXT("%s/Screenshots"), *FPaths::LaunchDir());
+#endif
 }
 
 void UDAGGameUserSettings::SetToDefaults()
@@ -87,6 +93,45 @@ void UDAGGameUserSettings::SetCandidateWordCount(int32 NewCount)
 void UDAGGameUserSettings::SetMaxDrawingRound(int32 NewCount)
 {
 	MaxDrawingRound = NewCount;
+}
+
+void UDAGGameUserSettings::SetScreenshotSavePath(FString NewPath)
+{
+	ScreenshotSavePath = NewPath;
+}
+
+FString UDAGGameUserSettings::GetScreenshotSavePath() const
+{
+	if (!ScreenshotSavePath.IsEmpty())
+	{
+		// Check and create dictionary
+		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+		if (!PlatformFile.DirectoryExists(*ScreenshotSavePath))
+		{
+			UE_LOG(LogInit, Log, TEXT("[GameUserSettings] Create screenshot dictionary %s"), *ScreenshotSavePath);
+
+			PlatformFile.CreateDirectory(*ScreenshotSavePath);
+		}
+
+		return ScreenshotSavePath;
+	}
+
+	return "";
+}
+
+void UDAGGameUserSettings::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	// Validate the screenshot path
+	if (ScreenshotSavePath.IsEmpty())
+	{
+#if WITH_EDITOR
+		ScreenshotSavePath = FString::Printf(TEXT("%s/Screenshots"), *FPaths::ProjectSavedDir());
+#else
+		ScreenshotSavePath = FString::Printf(TEXT("%s/Screenshots"), *FPaths::LaunchDir());
+#endif
+	}
 }
 
 UDAGGameUserSettings* UDAGGameUserSettings::GetDAGGameUserSettings()
