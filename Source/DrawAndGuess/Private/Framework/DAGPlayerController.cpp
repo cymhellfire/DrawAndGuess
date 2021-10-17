@@ -221,6 +221,17 @@ void ADAGPlayerController::ClientReceiveGameRestart_Implementation()
 	K2_OnReceiveGameRestart();
 }
 
+void ADAGPlayerController::ClientReceiveCorrectWord_Implementation(const FString& Word)
+{
+	// Invoke blueprint function
+	K2_OnReceiveCorrectWord(Word);
+}
+
+void ADAGPlayerController::ClientReceivePlayerRoundStart_Implementation(ADAGPlayerState* RoundPlayer)
+{
+	K2_OnReceivePlayerRoundStart(RoundPlayer);
+}
+
 void ADAGPlayerController::ExecCheckAllPlayerId()
 {
 	if (AGameStateBase* MyGameState = GetWorld()->GetGameState())

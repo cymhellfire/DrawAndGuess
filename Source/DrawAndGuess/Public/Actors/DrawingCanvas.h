@@ -52,6 +52,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable, Category="DrawingCanvas")
 	UTextureRenderTarget2D* GetCanvasRenderTarget() const { return CanvasRenderTarget; }
 
 	UTextureRenderTarget2D* GetCanvasPreviewRenderTarget() const { return CanvasPreviewRenderTarget; }

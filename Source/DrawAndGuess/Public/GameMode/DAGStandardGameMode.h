@@ -75,6 +75,9 @@ protected:
 
 	void OnWordChosen();
 
+	UFUNCTION()
+	void OnRoundEndTimerExpired();
+
 	virtual void PreBroadcastChatMessage(ADAGPlayerController* SourcePlayer, FString& InMessage) override;
 
 	virtual void OnAllPlayerReady() override;
@@ -120,6 +123,7 @@ protected:
 
 	FTimerHandle DrawingTimerHandle;
 	FTimerHandle ChooseWordTimerHandle;
+	FTimerHandle RoundEndTimerHandle;
 
 	TArray<const FWordInfo*> CandidateWords;
 

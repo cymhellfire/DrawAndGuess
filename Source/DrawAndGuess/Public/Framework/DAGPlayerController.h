@@ -65,6 +65,7 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientReceiveCandidateWords(const TArray<FString>& CandidateWords);
 
+	UFUNCTION(BlueprintCallable, Category="PlayerController")
 	void ClearDrawingActions();
 
 	UFUNCTION(Client, Reliable)
@@ -72,6 +73,12 @@ public:
 
 	UFUNCTION(Client, Reliable)
 	void ClientReceiveGameRestart();
+
+	UFUNCTION(Client, Reliable)
+	void ClientReceiveCorrectWord(const FString& Word);
+
+	UFUNCTION(Client, Reliable)
+	void ClientReceivePlayerRoundStart(class ADAGPlayerState* RoundPlayer);
 
 	UFUNCTION(Exec)
 	void ExecCheckAllPlayerId();
@@ -95,6 +102,12 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Meta=(DisplayName="OnReceiveGameRestart"))
 	void K2_OnReceiveGameRestart();
+
+	UFUNCTION(BlueprintImplementableEvent, Meta=(DisplayName="OnReceiveCorrectWord"))
+	void K2_OnReceiveCorrectWord(const FString& CorrectWord);
+
+	UFUNCTION(BlueprintImplementableEvent, Meta=(DisplayName="OnReceivePlayerRoundStart"))
+	void K2_OnReceivePlayerRoundStart(class ADAGPlayerState* RoundPlayer);
 
 public:
 	UPROPERTY(BlueprintAssignable, Category="PlayerController")

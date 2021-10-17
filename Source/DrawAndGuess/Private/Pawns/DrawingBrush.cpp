@@ -343,6 +343,17 @@ void ADrawingBrush::RemoveAcceptCanvas(ADrawingCanvas* TargetCanvas)
 {
 	if (IsValid(TargetCanvas))
 	{
+		// Submit current draw action immediately if parent canvas is removing
+		if (CurrentDrawAction && CurrentDrawAction->GetParentCanvas() == TargetCanvas)
+		{
+			if (ADrawingActionManager* DrawingActionManager = GetDrawingActionManager())
+			{
+				DrawingActionManager->SubmitDrawingAction(CurrentDrawAction);
+			}
+
+			// Release the current action
+			CurrentDrawAction = nullptr;
+		}
 		AcceptCanvas.Remove(TargetCanvas);
 	}
 }

@@ -158,6 +158,16 @@ void ADAGStandardGameMode::OnRoundStarted()
 {
 	CurrentPlayerId = GetPlayerIdByIndex(GetGameState<ADAGStandardGameState>()->GetCurrentPlayerIndex());
 
+	// Notify all players the new round start
+	ADAGPlayerState* CurrentPlayerState = GetPlayerControllerById(CurrentPlayerId)->GetPlayerState<ADAGPlayerState>();
+	if (CurrentPlayerState)
+	{
+		for (ADAGPlayerController* PlayerController : PlayerControllerList)
+		{
+			PlayerController->ClientReceivePlayerRoundStart(CurrentPlayerState);
+		}
+	}
+
 	SetNextPhase(SGMP_ChooseWord);
 }
 
@@ -220,14 +230,32 @@ void ADAGStandardGameMode::OnRoundEnded()
 	// Notify current player the word
 	if (ADAGPlayerController* CurrentPlayerController = GetPlayerControllerById(CurrentPlayerId))
 	{
-		// Clear the drawing actions
-		CurrentPlayerController->ClearDrawingActions();
-
 		if (ADAGPlayerState* CurrentPlayerState = CurrentPlayerController->GetPlayerState<ADAGPlayerState>())
 		{
 			CurrentPlayerState->SetGameState(EPlayerGameState::PGS_Guessing);
 		}
 	}
+
+	if (GuessedPlayerCount < PlayerControllerList.Num() - 1)
+	{
+		// Setup a timer before switch player if there is player not get correct answer
+		GetWorldTimerManager().SetTimer(RoundEndTimerHandle, this, &ADAGStandardGameMode::OnRoundEndTimerExpired, 5);
+
+		// Show all players the correct answer
+		for (ADAGPlayerController* PlayerController : PlayerControllerList)
+		{
+			PlayerController->ClientReceiveCorrectWord(CurrentWord->Word);
+		}
+	}
+	else
+	{
+		SetNextPhase(SGMP_SwitchPlayer);
+	}
+}
+
+void ADAGStandardGameMode::OnRoundEndTimerExpired()
+{
+	GetWorldTimerManager().ClearTimer(RoundEndTimerHandle);
 
 	// Switch to next player
 	SetNextPhase(SGMP_SwitchPlayer);
@@ -235,6 +263,12 @@ void ADAGStandardGameMode::OnRoundEnded()
 
 void ADAGStandardGameMode::OnSwitchPlayer()
 {
+	if (ADAGPlayerController* CurrentPlayerController = GetPlayerControllerById(CurrentPlayerId))
+	{
+		// Clear the drawing actions
+		CurrentPlayerController->ClearDrawingActions();
+	}
+
 	ADAGStandardGameState* StandardGameState = GetGameState<ADAGStandardGameState>();
 	if (StandardGameState)
 	{
